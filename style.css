@@ -290,14 +290,12 @@ nav a {
 }
 
 .post blockquote {
-  font-family: Consolas,"Liberation Mono",Courier,monospace;
-  background-color: #f8f8f8;
-  border: 1px solid #ccc;
-  font-size: 13px;
-  line-height: 19px;
-  overflow: auto;
-  padding: 6px 10px;
-  border-radius: 3px;
+  margin: 1.8em .8em;
+  border-left: 2px solid #666;
+  padding: 0.1em 1em;
+  color: #666;
+  font-size: 22px;
+  font-style: italic;
 }
 .post .comments {
   margin-top: 10px;
@@ -320,17 +318,18 @@ footer {
 }
 
 .highlight {
-  background-color: #F8F8F8;
-  border: 5px;
+  background-color: #efefef;
+  padding: 7px 7px 7px 10px;
+  border: 1px solid #ddd;
+  -moz-box-shadow: 3px 3px rgba(0, 0, 0, 0.1);
+  -webkit-box-shadow: 3px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 3px 3px rgba(0, 0, 0, 0.1);
+  margin: 20px 0 20px 0;
+  overflow: scroll;
 }
 
 code {
-  margin: 0px;
-  padding: 0px;
-  white-space: nowrap;
-  border-radius: 3px;
-  font-size: 12px;
-  font-family: Consolas,"Liberation Mono",Courier,monospace;
+  font-family: 'Bitstream Vera Sans Mono','Courier', monospace;
 }
 
 .highlight .c {
