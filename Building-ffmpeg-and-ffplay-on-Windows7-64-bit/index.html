@@ -51,7 +51,7 @@
           </div>
 
           <nav>
-            <a href="/">Blog</a>
+            <a href="/">CV</a>
             <a href="/about">About</a>
           </nav>
         </header>
@@ -90,9 +90,9 @@ C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\Shortcuts</p>
   <li>Make sure to use mingw64_shell.bat to have the correct MinGW-w64 environment. Run following commands in MinGW-w64 to install dependencies.</li>
 </ul>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>    #normal msys2 packages
+<div class="highlighter-rouge"><pre class="highlight"><code>    <span class="c">#normal msys2 packages</span>
     pacman -S make pkgconfdiffutils
-    # mingw-w64 packages and toolchains
+    <span class="c"># mingw-w64 packages and toolchains</span>
     pacman -S mingw-w64-x86_64-yasm mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL
 </code></pre>
 </div>
@@ -100,7 +100,7 @@ C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\Shortcuts</p>
 <h2 id="download-ffmpeg-code">Download ffmpeg code</h2>
 
 <div class="highlighter-rouge"><pre class="highlight"><code>    mkdir ffmpeg
-    cd ffmpeg
+    <span class="nb">cd </span>ffmpeg
     git clone https://github.com/FFmpeg/FFmpeg.git
 </code></pre>
 </div>
@@ -108,7 +108,7 @@ C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\Shortcuts</p>
 <h2 id="build-instructions-for-ffmpeg">Build instructions for ffmpeg</h2>
 <p>Ffmpeg can be built directly using following commands. If you wish to compile shared libraries, add –enable-shared to your configure options.</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>    ./configure --toolchain=msvc
+<div class="highlighter-rouge"><pre class="highlight"><code>    ./configure --toolchain<span class="o">=</span>msvc
     make
     make install
 </code></pre>
@@ -146,7 +146,7 @@ C:\msys64\mingw64\lib</li>
   <li>Run following commands :</li>
 </ul>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>./configure --enable-ffplay --toolchain=msvc --disable-shared --enable-static --enable-sdl --extra-ldflags="-Wl,-add-stdcall-alias" --enable-memalign-hack --disable-ffmpeg --pkg-config=sdl-config
+<div class="highlighter-rouge"><pre class="highlight"><code>./configure --enable-ffplay --toolchain<span class="o">=</span>msvc --disable-shared --enable-static --enable-sdl --extra-ldflags<span class="o">=</span><span class="s2">"-Wl,-add-stdcall-alias"</span> --enable-memalign-hack --disable-ffmpeg --pkg-config<span class="o">=</span>sdl-config
 </code></pre>
 </div>
 
