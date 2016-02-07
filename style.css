@@ -330,6 +330,7 @@ footer {
 
 code {
   font-family: 'Bitstream Vera Sans Mono','Courier', monospace;
+  background: #F4F5F5;
 }
 
 .highlight .c {

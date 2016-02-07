@@ -1,19 +1,19 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom"><generator uri="http://jekyllrb.com" version="3.1.0">Jekyll</generator><link href="http://abhijeetk.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="http://abhijeetk.github.io/" rel="alternate" type="text/html" /><updated>2016-02-06T11:37:54+05:30</updated><id>http://abhijeetk.github.io/</id><title>Abhijeet Kandalkar</title><subtitle>C++ developer and Open Source contributor in Webkit/Chromium. Learning Big DATA!!!</subtitle><entry><title>Building ffmpeg and ffplay</title><link href="http://abhijeetk.github.io/Building-ffmpeg-and-ffplay/" rel="alternate" type="text/html" title="Building ffmpeg and ffplay" /><published>2016-02-06T00:00:00+05:30</published><updated>2016-02-06T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Building ffmpeg and ffplay</id><content type="html" xml:base="http://abhijeetk.github.io/Building-ffmpeg-and-ffplay/">&lt;h2 id=&quot;install-depottools-&quot;&gt;Install depot_tools :&lt;/h2&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom"><generator uri="http://jekyllrb.com" version="3.1.0">Jekyll</generator><link href="http://abhijeetk.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="http://abhijeetk.github.io/" rel="alternate" type="text/html" /><updated>2016-02-07T12:31:21+05:30</updated><id>http://abhijeetk.github.io/</id><title>Abhijeet Kandalkar</title><subtitle>C++ developer and Open Source contributor in Webkit/Chromium. Learning Big DATA!!!</subtitle><entry><title>Building nwjs on Windows7 64 bit</title><link href="http://abhijeetk.github.io/Building-nwjs-on-Windows7-64-bit/" rel="alternate" type="text/html" title="Building nwjs on Windows7 64 bit" /><published>2016-02-07T00:00:00+05:30</published><updated>2016-02-07T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Building nwjs on Windows7 64 bit</id><content type="html" xml:base="http://abhijeetk.github.io/Building-nwjs-on-Windows7-64-bit/">&lt;h2 id=&quot;install-depottools-&quot;&gt;Install depot_tools :&lt;/h2&gt;
 &lt;ul&gt;
   &lt;li&gt;Download code&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;
-$ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;ul&gt;
   &lt;li&gt;Add depot_tools to your PATH:&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;
-$ export PATH=$PATH:~/depot_tools (MAC/Linux)
-&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ export PATH=$PATH:~/depot_tools (MAC/Linux)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;p&gt;On Windows, add depot_tools to PATH enviorment variable.&lt;/p&gt;
 
@@ -22,156 +22,70 @@ $ export PATH=$PATH:~/depot_tools (MAC/Linux)
   &lt;li&gt;Create source directory and download configuration .gclient file.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;blockquote&gt;
-  &lt;p&gt;mkdir node-webkit
-cd node-webkit
-touch .gclient
-vi .gclient&lt;/p&gt;
-&lt;/blockquote&gt;
-
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    node-webkit
+    cd node-webkit
+    touch .gclient
+    vi .gclient
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 &lt;ul&gt;
   &lt;li&gt;Now edit the file .gclient, and paste this into it:&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;blockquote&gt;
-  &lt;p&gt;solutions = [ { “name”        : “src”,
-         “url”         : “https://github.com/nwjs/chromium.src.git@origin/nw12”,
-         “deps_file”   : “DEPS”,
-         “managed”     : True,
-         “custom_deps” : {
-           “src/third_party/WebKit/LayoutTests”: None,
-           “src/chrome_frame/tools/test/reference_build/chrome”: None,
-           “src/chrome_frame/tools/test/reference_build/chrome_win”: None,
-           “src/chrome/tools/test/reference_build/chrome”: None,
-           “src/chrome/tools/test/reference_build/chrome_linux”: None,
-           “src/chrome/tools/test/reference_build/chrome_mac”: None,
-           “src/chrome/tools/test/reference_build/chrome_win”: None,
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    solutions = [
+       { &quot;name&quot;        : &quot;src&quot;,
+         &quot;url&quot;         : &quot;https://github.com/nwjs/chromium.src.git@origin/nw12&quot;,
+         &quot;deps_file&quot;   : &quot;DEPS&quot;,
+         &quot;managed&quot;     : True,
+       
+         &quot;custom_deps&quot; : {
+           &quot;src/third_party/WebKit/LayoutTests&quot;: None,
+           &quot;src/chrome_frame/tools/test/reference_build/chrome&quot;: None,
+           &quot;src/chrome_frame/tools/test/reference_build/chrome_win&quot;: None,
+           &quot;src/chrome/tools/test/reference_build/chrome&quot;: None,
+           &quot;src/chrome/tools/test/reference_build/chrome_linux&quot;: None,
+           &quot;src/chrome/tools/test/reference_build/chrome_mac&quot;: None,
+           &quot;src/chrome/tools/test/reference_build/chrome_win&quot;: None,
          },
-         “safesync_url”: “”,
+         &quot;safesync_url&quot;: &quot;&quot;,
        },
-    ]&lt;/p&gt;
-&lt;/blockquote&gt;
+    ]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;ul&gt;
   &lt;li&gt;Environment variables&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;blockquote&gt;
-  &lt;p&gt;DEPOT_TOOLS_WIN_TOOLCHAIN=0 
-DXSDK_DIR=C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\&lt;br /&gt;
-GYP_GENERATOR=ninja,msvs
-GYP_GENERATORS=ninja
-GYP_DEFINES=nwjs_sdk=1 disable_nacl=0 proprietary_codecs=1
-GYP_MSVS_VERSION=2013
-https_proxy=43.88.64.10:8080 
-http_proxy=43.88.64.10:8080&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    DEPOT_TOOLS_WIN_TOOLCHAIN=0 
+    DXSDK_DIR=C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\  
+    GYP_GENERATOR=ninja,msvs
+    GYP_GENERATORS=ninja
+    GYP_DEFINES=nwjs_sdk=1 disable_nacl=0 proprietary_codecs=1
+    GYP_MSVS_VERSION=2013
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;p&gt;Add machine architecture information:
-For 64 bit OS :
-&amp;gt; GYP_DEFINES=host_arch=x64 target_arch=x64&lt;/p&gt;
+For 64 bit OS :&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    $GYP_DEFINES=host_arch=x64 target_arch=x64 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;h2 id=&quot;sync-code&quot;&gt;Sync Code&lt;/h2&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;$node-webkit&amp;gt;gclient sync&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    $node-webkit&amp;gt;gclient sync
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;h2 id=&quot;build&quot;&gt;Build&lt;/h2&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;ninja -C out/Release_x64 nw -j16&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    $ninja -C out/Release_x64 nw -j16
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;h2 id=&quot;clean-code&quot;&gt;Clean code&lt;/h2&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;ninja -C out/Release_x64 -t clean&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;Next you can update your site name, avatar and other options using the _config.yml file in the root of your repository (shown below).&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/config.png&quot; alt=&quot;_config.yml&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;The easiest way to make your first post is to edit this one. Go into /_posts/ and update the Hello World markdown file. For more instructions head over to the &lt;a href=&quot;https://github.com/barryclark/jekyll-now&quot;&gt;Jekyll Now repository&lt;/a&gt; on GitHub.&lt;/p&gt;</content><summary>Install depot_tools :
-
-  Download code</summary></entry><entry><title>Building nw12 on windows-7 64-bit</title><link href="http://abhijeetk.github.io/Building-nwjs/" rel="alternate" type="text/html" title="Building nw12 on windows-7 64-bit" /><published>2016-02-05T00:00:00+05:30</published><updated>2016-02-05T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Building nwjs</id><content type="html" xml:base="http://abhijeetk.github.io/Building-nwjs/">&lt;h2 id=&quot;install-depottools-&quot;&gt;Install depot_tools :&lt;/h2&gt;
-&lt;ul&gt;
-  &lt;li&gt;Download code&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;
-$ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-&lt;/code&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Add depot_tools to your PATH:&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;
-$ export PATH=$PATH:~/depot_tools (MAC/Linux)
-&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;On Windows, add depot_tools to PATH enviorment variable.&lt;/p&gt;
-
-&lt;h2 id=&quot;get-nwjs-source-code-&quot;&gt;Get nwjs source code :&lt;/h2&gt;
-&lt;ul&gt;
-  &lt;li&gt;Create source directory and download configuration .gclient file.
-&lt;code class=&quot;highlighter-rouge&quot;&gt;bash
-node-webkit
-cd node-webkit
-touch .gclient
-vi .gclient
-&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Now edit the file .gclient, and paste this into it:
-&lt;code class=&quot;highlighter-rouge&quot;&gt;python
-  solutions = [
-     { &quot;name&quot;        : &quot;src&quot;,
-       &quot;url&quot;         : &quot;https://github.com/nwjs/chromium.src.git@origin/nw12&quot;,
-       &quot;deps_file&quot;   : &quot;DEPS&quot;,
-       &quot;managed&quot;     : True,
-       &quot;custom_deps&quot; : {
-         &quot;src/third_party/WebKit/LayoutTests&quot;: None,
-         &quot;src/chrome_frame/tools/test/reference_build/chrome&quot;: None,
-         &quot;src/chrome_frame/tools/test/reference_build/chrome_win&quot;: None,
-         &quot;src/chrome/tools/test/reference_build/chrome&quot;: None,
-         &quot;src/chrome/tools/test/reference_build/chrome_linux&quot;: None,
-         &quot;src/chrome/tools/test/reference_build/chrome_mac&quot;: None,
-         &quot;src/chrome/tools/test/reference_build/chrome_win&quot;: None,
-       },
-       &quot;safesync_url&quot;: &quot;&quot;,
-     },
-  ]
-&lt;/code&gt;&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;Environment variables
-&lt;code class=&quot;highlighter-rouge&quot;&gt;json
-DEPOT_TOOLS_WIN_TOOLCHAIN=0
-DXSDK_DIR=C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\ 
-GYP_GENERATOR=ninja,msvs
-GYP_GENERATORS=ninja
-GYP_DEFINES=nwjs_sdk=1 disable_nacl=0 proprietary_codecs=1
-GYP_MSVS_VERSION=2013
-&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Add machine architecture information:
-For 64 bit OS :
-&lt;code class=&quot;highlighter-rouge&quot;&gt;bash
-  $GYP_DEFINES=host_arch=x64 target_arch=x64 
-&lt;/code&gt;
-##Sync Code##
-&lt;code class=&quot;highlighter-rouge&quot;&gt;bash
-  $node-webkit&amp;gt;gclient sync
-&lt;/code&gt;
-##Build##
-&lt;code class=&quot;highlighter-rouge&quot;&gt;bash
-  $ninja -C out/Release_x64 nw -j16
-&lt;/code&gt;
-##Clean code##
-&lt;code class=&quot;highlighter-rouge&quot;&gt;bash
-  $ninja -C out/Release_x64 -t clean
-&lt;/code&gt;&lt;/p&gt;</content><summary>Install depot_tools :
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    $ninja -C out/Release_x64 -t clean
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;</content><summary>Install depot_tools :
 
   Download code</summary></entry></feed>
