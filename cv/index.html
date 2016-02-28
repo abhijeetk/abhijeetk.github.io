@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Building ffmpeg form nwjs/chromium repository – Abhijeet Kandalkar – C++ developer and Open Source contributor in Webkit/Chromium. Learning Big DATA!!!</title>
+    <title>For resume plase contact me @ – Abhijeet Kandalkar – C++ developer and Open Source contributor in Webkit/Chromium. Learning Big DATA!!!</title>
 
         <meta charset="utf-8" />
     <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
@@ -9,24 +9,14 @@
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
 
     
-    <meta name="description" content="
-  Open VS2013 x64 Native Tools Command Prompt
-C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\Shortcuts
-
-
-" />
-    <meta property="og:description" content="
-  Open VS2013 x64 Native Tools Command Prompt
-C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\Shortcuts
-
-
-" />
+    <meta name="description" content="C++ developer and Open Source contributor in Webkit/Chromium. Learning Big DATA!!!">
+    <meta property="og:description" content="C++ developer and Open Source contributor in Webkit/Chromium. Learning Big DATA!!!" />
     
     <meta name="author" content="Abhijeet Kandalkar" />
 
     
-    <meta property="og:title" content="Building ffmpeg form nwjs/chromium repository" />
-    <meta property="twitter:title" content="Building ffmpeg form nwjs/chromium repository" />
+    <meta property="og:title" content="For resume plase contact me @" />
+    <meta property="twitter:title" content="For resume plase contact me @" />
     
 
     <!--[if lt IE 9]>
@@ -59,141 +49,14 @@ C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\Shortcuts
     </div>
 
     <div id="main" role="main" class="container">
-      <article class="post">
-  <h1>Building ffmpeg form nwjs/chromium repository</h1>
+      <article class="page">
+
+  <h1>For resume plase contact me @</h1>
 
   <div class="entry">
-    <ul>
-  <li>
-    <p>Open VS2013 x64 Native Tools Command Prompt
-C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\Shortcuts</p>
-  </li>
-  <li>
-    <p>Open C:\cygwin64\Cygwin.bat in VS2013 x64 Native Tools Command Prompt and make sure that compiler and linker are refering to VS2013 64 bit executables as shown below.[Assuming you have cygwin installed on your Windows machine]</p>
-  </li>
-</ul>
-
-<p><img src="/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image001.png" alt="alt text" title="Building ffmpeg form nwjs/chromium repository" /></p>
-
-<ul>
-  <li>Set following environment variables</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>    <span class="nb">set </span><span class="nv">GYP_DEFINES</span><span class="o">=</span><span class="nv">host_arch</span><span class="o">=</span>x64 <span class="nv">target_arch</span><span class="o">=</span>x64 <span class="nv">nwjs_sdk</span><span class="o">=</span>1 <span class="nv">disable_nacl</span><span class="o">=</span>0 <span class="nv">proprietary_codecs</span><span class="o">=</span>1 <span class="nv">branding</span><span class="o">=</span>Chrome
-</code></pre>
-</div>
-
-<p><img src="/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image002.png" alt="alt text" title="Building ffmpeg form nwjs/chromium repository" /></p>
-
-<ul>
-  <li>Go to Ffmpeg source code location :</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>    &lt;node-webkit-dir&gt;<span class="se">\s</span>rc<span class="se">\t</span>hird_party<span class="se">\f</span>fmpeg
-</code></pre>
-</div>
-
-<ul>
-  <li><strong>[APPLY PATCH to file ]</strong> <ffmpeg_src>/chromium/scripts/build_ffmpeg.py</ffmpeg_src></li>
-</ul>
-
-<p>Add support of mxf by enabling it as decoder, demuxer and parser</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="gd">-      '--enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw',
--      '--enable-demuxer=ogg,matroska,wav',
--      '--enable-parser=opus,vp3,vorbis,vp8',
-</span>
-<span class="gi">+      '--enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw,mxf',
-+      '--enable-demuxer=ogg,matroska,wav,mxf',
-+      '--enable-parser=opus,vp3,vorbis,vp8,mxf',
-</span></code></pre>
-</div>
-
-<ul>
-  <li><strong>[APPLY PATCH to file ]</strong> : <ffmpeg_src>/chromium/scripts/build_ffmpeg.py</ffmpeg_src></li>
-</ul>
-
-<p>Add support of mxf by enabling it as decoder, demuxer and parser</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>       ['chromeos == 1', {
-         'ffmpeg_branding%': '&lt;(branding)OS',
-       }, {  # otherwise, assume Chrome/Chromium.
-<span class="gd">-        'ffmpeg_branding%': '&lt;(branding)',
-</span><span class="gi">+         'ffmpeg_branding%': 'Chrome',
-</span>       }],
-     ],
-</code></pre>
-</div>
-
-<ul>
-  <li>Build standalone ffmpeg code for windows 64 bit.</li>
-</ul>
-
-<p><img src="/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image003.png" alt="alt text" title="Building ffmpeg form nwjs/chromium repository" /></p>
-
-<ul>
-  <li>
-    <p>Build will generate following directory <strong>build.x64.win</strong><ffmpeg_src> folder.</ffmpeg_src></p>
-  </li>
-  <li>
-    <p>Copy config and from <strong>build.x64.win</strong>:</p>
-  </li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>ffmpeg_src&gt;./chromium/scripts/copy_config.sh
-</code></pre>
-</div>
-
-<p>Regenerate ffmpeg gyp files :</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>ffmpeg_src&gt;python chromium/scripts/generate_gyp.py
-</code></pre>
-</div>
-
-<p><img src="/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image004.png" alt="alt text" title="Building ffmpeg form nwjs/chromium repository" /></p>
-
-<p>Following files get modified after running above commands:</p>
-
-<p><img src="/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image005.png" alt="alt text" title="Building ffmpeg form nwjs/chromium repository" /></p>
-
-<ul>
-  <li><strong>Force nwjs(chromium) to regenerate ninja files</strong> for modified  *.h, *.asm, *.gypi (see previous step): 
-Go to nwjs source code location :  /node-webkit/src</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>src&gt;gclientrunhook–force
-</code></pre>
-</div>
-
-<p><img src="/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image006.png" alt="alt text" title="Building ffmpeg form nwjs/chromium repository" /></p>
-
-<ul>
-  <li>Build ffmpeg code using ninja to generate ffmpegsumo.dll:</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>src&gt;ninja -C out/Debug_x64 ffmpegsumo-j16
-</code></pre>
-</div>
-
-<p><img src="/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image007.png" alt="alt text" title="Building ffmpeg form nwjs/chromium repository" /></p>
-
-<ul>
-  <li>Build nwjs code using ninja and link to ffmpegsumo.dll:</li>
-</ul>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>src&gt;ninja -C out/Debug_x64 nw -j16
-</code></pre>
-</div>
-
-<p><img src="/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image008.png" alt="alt text" title="Building ffmpeg form nwjs/chromium repository" /></p>
+    <p><a href="&#109;&#097;&#105;&#108;&#116;&#111;:&#107;&#097;&#110;&#100;&#097;&#108;&#107;&#097;&#114;&#046;&#097;&#098;&#104;&#105;&#106;&#101;&#101;&#116;&#053;&#056;&#064;&#103;&#109;&#097;&#105;&#108;&#046;&#099;&#111;&#109;">&#107;&#097;&#110;&#100;&#097;&#108;&#107;&#097;&#114;&#046;&#097;&#098;&#104;&#105;&#106;&#101;&#101;&#116;&#053;&#056;&#064;&#103;&#109;&#097;&#105;&#108;&#046;&#099;&#111;&#109;</a></p>
 
   </div>
-
-  <div class="date">
-    Written on February 28, 2016
-  </div>
-
-  
 </article>
 
     </div>
