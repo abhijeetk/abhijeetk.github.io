@@ -1,4 +1,127 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom"><generator uri="http://jekyllrb.com" version="3.1.0">Jekyll</generator><link href="http://abhijeetk.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="http://abhijeetk.github.io/" rel="alternate" type="text/html" /><updated>2016-02-07T18:12:23+05:30</updated><id>http://abhijeetk.github.io/</id><title>Abhijeet Kandalkar</title><subtitle>C++ developer and Open Source contributor in Webkit/Chromium. Learning Big DATA!!!</subtitle><entry><title>Building nwjs on Windows7 64 bit</title><link href="http://abhijeetk.github.io/Building-nwjs-on-Windows7-64-bit/" rel="alternate" type="text/html" title="Building nwjs on Windows7 64 bit" /><published>2016-02-07T00:00:00+05:30</published><updated>2016-02-07T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Building nwjs on Windows7 64 bit</id><content type="html" xml:base="http://abhijeetk.github.io/Building-nwjs-on-Windows7-64-bit/">&lt;h2 id=&quot;install-depottools-&quot;&gt;Install depot_tools :&lt;/h2&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom"><generator uri="http://jekyllrb.com" version="3.1.0">Jekyll</generator><link href="http://abhijeetk.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="http://abhijeetk.github.io/" rel="alternate" type="text/html" /><updated>2016-02-28T15:44:09+05:30</updated><id>http://abhijeetk.github.io/</id><title>Abhijeet Kandalkar</title><subtitle>C++ developer and Open Source contributor in Webkit/Chromium. Learning Big DATA!!!</subtitle><entry><title>Building ffmpeg form nwjs/chromium repository</title><link href="http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository/" rel="alternate" type="text/html" title="Building ffmpeg form nwjs/chromium repository" /><published>2016-02-28T00:00:00+05:30</published><updated>2016-02-28T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository</id><content type="html" xml:base="http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository/">&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Open VS2013 x64 Native Tools Command Prompt
+C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\Shortcuts&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Open C:\cygwin64\Cygwin.bat in VS2013 x64 Native Tools Command Prompt and make sure that compiler and linker are refering to VS2013 64 bit executables as shown below.[Assuming you have cygwin installed on your Windows machine]&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image001.png&quot; alt=&quot;alt text&quot; title=&quot;Building ffmpeg form nwjs/chromium repository&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Set following environment variables&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;GYP_DEFINES&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;host_arch&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;x64 &lt;span class=&quot;nv&quot;&gt;target_arch&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;x64 &lt;span class=&quot;nv&quot;&gt;nwjs_sdk&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1 &lt;span class=&quot;nv&quot;&gt;disable_nacl&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;0 &lt;span class=&quot;nv&quot;&gt;proprietary_codecs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1 &lt;span class=&quot;nv&quot;&gt;branding&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;Chrome
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image002.png&quot; alt=&quot;alt text&quot; title=&quot;Building ffmpeg form nwjs/chromium repository&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Go to Ffmpeg source code location :&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &amp;lt;node-webkit-dir&amp;gt;&lt;span class=&quot;se&quot;&gt;\s&lt;/span&gt;rc&lt;span class=&quot;se&quot;&gt;\t&lt;/span&gt;hird_party&lt;span class=&quot;se&quot;&gt;\f&lt;/span&gt;fmpeg
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;[APPLY PATCH to file ]&lt;/strong&gt; &lt;ffmpeg_src&gt;/chromium/scripts/build_ffmpeg.py&lt;/ffmpeg_src&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Add support of mxf by enabling it as decoder, demuxer and parser&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;gd&quot;&gt;-      &#39;--enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw&#39;,
+-      &#39;--enable-demuxer=ogg,matroska,wav&#39;,
+-      &#39;--enable-parser=opus,vp3,vorbis,vp8&#39;,
+&lt;/span&gt;
+&lt;span class=&quot;gi&quot;&gt;+      &#39;--enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw,mxf&#39;,
++      &#39;--enable-demuxer=ogg,matroska,wav,mxf&#39;,
++      &#39;--enable-parser=opus,vp3,vorbis,vp8,mxf&#39;,
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;[APPLY PATCH to file ]&lt;/strong&gt; : &lt;ffmpeg_src&gt;/chromium/scripts/build_ffmpeg.py&lt;/ffmpeg_src&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Add support of mxf by enabling it as decoder, demuxer and parser&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;       [&#39;chromeos == 1&#39;, {
+         &#39;ffmpeg_branding%&#39;: &#39;&amp;lt;(branding)OS&#39;,
+       }, {  # otherwise, assume Chrome/Chromium.
+&lt;span class=&quot;gd&quot;&gt;-        &#39;ffmpeg_branding%&#39;: &#39;&amp;lt;(branding)&#39;,
+&lt;/span&gt;&lt;span class=&quot;gi&quot;&gt;+         &#39;ffmpeg_branding%&#39;: &#39;Chrome&#39;,
+&lt;/span&gt;       }],
+     ],
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Build standalone ffmpeg code for windows 64 bit.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image003.png&quot; alt=&quot;alt text&quot; title=&quot;Building ffmpeg form nwjs/chromium repository&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Build will generate following directory &lt;strong&gt;build.x64.win&lt;/strong&gt;&lt;ffmpeg_src&gt; folder.&lt;/ffmpeg_src&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Copy config and from &lt;strong&gt;build.x64.win&lt;/strong&gt;:&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ffmpeg_src&amp;gt;./chromium/scripts/copy_config.sh
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Regenerate ffmpeg gyp files :&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ffmpeg_src&amp;gt;python chromium/scripts/generate_gyp.py
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image004.png&quot; alt=&quot;alt text&quot; title=&quot;Building ffmpeg form nwjs/chromium repository&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Following files get modified after running above commands:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image005.png&quot; alt=&quot;alt text&quot; title=&quot;Building ffmpeg form nwjs/chromium repository&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Force nwjs(chromium) to regenerate ninja files&lt;/strong&gt; for modified  *.h, *.asm, *.gypi (see previous step): 
+Go to nwjs source code location :  /node-webkit/src&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;src&amp;gt;gclientrunhook–force
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image006.png&quot; alt=&quot;alt text&quot; title=&quot;Building ffmpeg form nwjs/chromium repository&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Build ffmpeg code using ninja to generate ffmpegsumo.dll:&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;src&amp;gt;ninja -C out/Debug_x64 ffmpegsumo-j16
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image007.png&quot; alt=&quot;alt text&quot; title=&quot;Building ffmpeg form nwjs/chromium repository&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Build nwjs code using ninja and link to ffmpegsumo.dll:&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;src&amp;gt;ninja -C out/Debug_x64 nw -j16
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image008.png&quot; alt=&quot;alt text&quot; title=&quot;Building ffmpeg form nwjs/chromium repository&quot; /&gt;&lt;/p&gt;</content><summary>Open VS2013 x64 Native Tools Command Prompt
+C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\Shortcuts</summary></entry><entry><title>Building nwjs on Windows7 64 bit</title><link href="http://abhijeetk.github.io/Building-nwjs-on-Windows7-64-bit/" rel="alternate" type="text/html" title="Building nwjs on Windows7 64 bit" /><published>2016-02-07T00:00:00+05:30</published><updated>2016-02-07T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Building nwjs on Windows7 64 bit</id><content type="html" xml:base="http://abhijeetk.github.io/Building-nwjs-on-Windows7-64-bit/">&lt;h2 id=&quot;install-depottools-&quot;&gt;Install depot_tools :&lt;/h2&gt;
 &lt;ul&gt;
   &lt;li&gt;Download code&lt;/li&gt;
 &lt;/ul&gt;
