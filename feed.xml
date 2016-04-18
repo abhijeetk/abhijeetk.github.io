@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom"><generator uri="http://jekyllrb.com" version="3.1.0">Jekyll</generator><link href="http://abhijeetk.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="http://abhijeetk.github.io/" rel="alternate" type="text/html" /><updated>2016-04-18T19:56:24+05:30</updated><id>http://abhijeetk.github.io/</id><title>Abhijeet Kandalkar</title><subtitle>C++ developer and Open Source contributor in Webkit/Chromium. Learning Big DATA!!!</subtitle><entry><title>Building ffmpeg form nwjs/chromium repository</title><link href="http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository/" rel="alternate" type="text/html" title="Building ffmpeg form nwjs/chromium repository" /><published>2016-02-28T00:00:00+05:30</published><updated>2016-02-28T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository</id><content type="html" xml:base="http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository/">&lt;ul&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom"><generator uri="http://jekyllrb.com" version="3.1.0">Jekyll</generator><link href="http://abhijeetk.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="http://abhijeetk.github.io/" rel="alternate" type="text/html" /><updated>2016-04-19T00:59:06+05:30</updated><id>http://abhijeetk.github.io/</id><title>Abhijeet Kandalkar</title><subtitle>C++ developer and Open Source contributor in Webkit/Chromium. Learning Big DATA!!!</subtitle><entry><title>Building ffmpeg form nwjs/chromium repository</title><link href="http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository/" rel="alternate" type="text/html" title="Building ffmpeg form nwjs/chromium repository" /><published>2016-02-28T00:00:00+05:30</published><updated>2016-02-28T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository</id><content type="html" xml:base="http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository/">&lt;ul&gt;
   &lt;li&gt;
     &lt;p&gt;Open VS2013 x64 Native Tools Command Prompt
 C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\Shortcuts&lt;/p&gt;
@@ -343,7 +343,7 @@ Pipeline is completely pull-based and relies on the system clock (vsync) to driv
 
 &lt;p&gt;&lt;strong&gt;&lt;em&gt;State machine of pipeline:&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/images/Video-rendering-in-chromium-nwjs/state-machine.png&quot; alt=&quot;alt text&quot; title=&quot;Video element rendering in chromium nwjs&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/images/Video-rendering-in-chromium-nwjs/state_machine.png&quot; alt=&quot;alt text&quot; title=&quot;Video element rendering in chromium nwjs&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;&lt;strong&gt;Working of filters in pipeline&lt;/strong&gt;&lt;/p&gt;
 
@@ -443,11 +443,13 @@ Pipeline is completely pull-based and relies on the system clock (vsync) to driv
   &lt;li&gt;FFmpeg works on buffers provided by networks(bufferDataSource)&lt;/li&gt;
   &lt;li&gt;FFmpeg can be decomposed to run in threaded implementation for demuxing, decoding and rendering.&lt;/li&gt;
   &lt;li&gt;Caching of data is implemented at each filter level.&lt;/li&gt;
-  &lt;li&gt;HTML Media Elements like &lt;audio&gt; &lt;video&gt; and Web audio are depends on chromium-ffmpeg integration. This Media elements uses underlying playback engine (pipeline) and media framework (Ffmpeg).&lt;/video&gt;&lt;/audio&gt;&lt;/li&gt;
+  &lt;li&gt;HTML Media Elements like audio, video and Web audio are depends on chromium-ffmpeg integration. This Media elements uses underlying playback engine (pipeline) and media framework (Ffmpeg).&lt;/li&gt;
   &lt;li&gt;Ffmpeg supports almost all pixel format but Chromium pipeline supports only famous pixel formats.&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;hr /&gt;
 
 &lt;p&gt;&lt;strong&gt;References:&lt;/strong&gt;
-	- https://www.chromium.org/developers/design-documents/video&lt;/p&gt;</content><summary>Video rendering in chromium/nwjs:</summary></entry></feed>
+	- https://www.chromium.org/developers/design-documents/video&lt;/p&gt;</content><summary>Video rendering in chromium/nwjs:</summary></entry><entry><title>Life cycle of Video element in chromium(m41)</title><link href="http://abhijeetk.github.io/Video-rendering-in-chromium(Sequence-diagram)/" rel="alternate" type="text/html" title="Life cycle of Video element in chromium(m41)" /><published>2016-02-06T00:00:00+05:30</published><updated>2016-02-06T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Video-rendering-in-chromium(Sequence diagram)</id><content type="html" xml:base="http://abhijeetk.github.io/Video-rendering-in-chromium(Sequence-diagram)/">&lt;h2 id=&quot;life-cycle-of-video-element&quot;&gt;Life cycle of Video element:&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/video_rendering_sequence_diagram/image00001.jpeg&quot; alt=&quot;Sequence diagram for Life cycle of Video element in chromium(m41)&quot; title=&quot;Life cycle of Video element in chromium(m41)&quot; /&gt;&lt;/p&gt;</content><summary>Life cycle of Video element:</summary></entry></feed>
