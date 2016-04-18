@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom"><generator uri="http://jekyllrb.com" version="3.1.0">Jekyll</generator><link href="http://abhijeetk.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="http://abhijeetk.github.io/" rel="alternate" type="text/html" /><updated>2016-04-14T22:39:01+05:30</updated><id>http://abhijeetk.github.io/</id><title>Abhijeet Kandalkar</title><subtitle>C++ developer and Open Source contributor in Webkit/Chromium. Learning Big DATA!!!</subtitle><entry><title>Building ffmpeg form nwjs/chromium repository</title><link href="http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository/" rel="alternate" type="text/html" title="Building ffmpeg form nwjs/chromium repository" /><published>2016-02-28T00:00:00+05:30</published><updated>2016-02-28T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository</id><content type="html" xml:base="http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository/">&lt;ul&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom"><generator uri="http://jekyllrb.com" version="3.1.0">Jekyll</generator><link href="http://abhijeetk.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="http://abhijeetk.github.io/" rel="alternate" type="text/html" /><updated>2016-04-18T19:56:24+05:30</updated><id>http://abhijeetk.github.io/</id><title>Abhijeet Kandalkar</title><subtitle>C++ developer and Open Source contributor in Webkit/Chromium. Learning Big DATA!!!</subtitle><entry><title>Building ffmpeg form nwjs/chromium repository</title><link href="http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository/" rel="alternate" type="text/html" title="Building ffmpeg form nwjs/chromium repository" /><published>2016-02-28T00:00:00+05:30</published><updated>2016-02-28T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository</id><content type="html" xml:base="http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository/">&lt;ul&gt;
   &lt;li&gt;
     &lt;p&gt;Open VS2013 x64 Native Tools Command Prompt
 C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\Shortcuts&lt;/p&gt;
@@ -298,4 +298,156 @@ C:\msys64\mingw64\lib&lt;/li&gt;
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;</content><summary>Prerequisite for ffmpeg
 
-  Install Msys64 on yourmachine. (msys2-x86_64-20150916.exe)</summary></entry></feed>
+  Install Msys64 on yourmachine. (msys2-x86_64-20150916.exe)</summary></entry><entry><title>Video element rendering in chromium nwjs</title><link href="http://abhijeetk.github.io/Video-rendering-in-chromium-nwjs/" rel="alternate" type="text/html" title="Video element rendering in chromium nwjs" /><published>2016-02-06T00:00:00+05:30</published><updated>2016-02-06T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Video-rendering-in-chromium-nwjs</id><content type="html" xml:base="http://abhijeetk.github.io/Video-rendering-in-chromium-nwjs/">&lt;h2 id=&quot;video-rendering-in-chromiumnwjs&quot;&gt;Video rendering in chromium/nwjs:&lt;/h2&gt;
+
+&lt;p&gt;There are three major components to Chromium’s video implementation:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Pipeline&lt;/strong&gt;
+    &lt;ul&gt;
+      &lt;li&gt;Chromium’s implementation of a media playback engine&lt;/li&gt;
+      &lt;li&gt;Handles asynchronous operations like audio/video demuxing decoding, synchronization and resource fetching&lt;/li&gt;
+      &lt;li&gt;Pipeline works like a state machine to perform asynchronous initialization, pausing, seeking and playing.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;FFmpeg&lt;/strong&gt;
+    &lt;ul&gt;
+      &lt;li&gt;Open source library used for Demuxing(container format parsing) and audio/video decoding&lt;/li&gt;
+      &lt;li&gt;implements parallel frame-level decoding for many popular codecs.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;WebKit&lt;/strong&gt;
+    &lt;ul&gt;
+      &lt;li&gt;Implements the HTML and Javascript bindings ( to communicate with video element using javascript)&lt;/li&gt;
+      &lt;li&gt;Handles rendering the user agent controls (Creation of media player UI)&lt;/li&gt;
+      &lt;li&gt;Provides WebMediaPlayer interface for port-specific implementations of a media playback engine&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;pipeline&quot;&gt;Pipeline:&lt;/h3&gt;
+
+&lt;p&gt;The pipeline is a pull-based media playback engine that abstracts each step of media playback into 6 different filters.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;1. data source
+2. demuxing 
+3. audio decoding
+4. video decoding 
+5. audio rendering
+6. video rendering 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;The pipeline manages the lifetime of the filters and exposes a simple thread-safe interface to clients.  The filters are connected together to form a filter graph. All 6 filters are running in different thread to provide responsive media playback in browser. Caching of data is implemented at each filter level.
+Pipeline is completely pull-based and relies on the system clock (vsync) to drive playback.  As the system clock requests additional data, the video renderer requests decoded video data from the video decoder, which requests encoded buffers from the demuxer, which reads from the data source, and so on.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;State machine of pipeline:&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Video-rendering-in-chromium-nwjs/state-machine.png&quot; alt=&quot;alt text&quot; title=&quot;Video element rendering in chromium nwjs&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Working of filters in pipeline&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Video-rendering-in-chromium-nwjs/image002.png&quot; alt=&quot;alt text&quot; title=&quot;Video element rendering in chromium nwjs&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Caching of data is implemented at each filter level.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Video-rendering-in-chromium-nwjs/image004.png&quot; alt=&quot;alt text&quot; title=&quot;Video element rendering in chromium nwjs&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Pipeline and ffmpeg&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Video-rendering-in-chromium-nwjs/image005.png&quot; alt=&quot;alt text&quot; title=&quot;Video element rendering in chromium nwjs&quot; /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;strong&gt;Following are filters names and their respective implementation in chromium code.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Data source	&lt;strong&gt;BufferedDataSource&lt;/strong&gt;
+    &lt;ul&gt;
+      &lt;li&gt;A data source capable of loading URLs and buffering the data using an in-memory sliding window.&lt;/li&gt;
+      &lt;li&gt;This class ask network layer to fetch data.&lt;/li&gt;
+      &lt;li&gt;BufferedDataSource::intermediate_read_buffer_ variable stores data downloaded from network.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Demuxing	&lt;strong&gt;FFmpegDemuxer/FFmpegDemuxerStream/DemuxerStream&lt;/strong&gt;
+    &lt;ul&gt;
+      &lt;li&gt;Demuxer initialises ffmpeg using FFmpegGlue class.&lt;/li&gt;
+      &lt;li&gt;Demuxer use buffers downloaded by data source and     attempt to recognize the container by looking at the first few bytes&lt;/li&gt;
+      &lt;li&gt;Demuxer determines number of streams , type of streams(audio/video) and check whether
+ video/audio codec configuration supported&lt;/li&gt;
+      &lt;li&gt;Create audio/video ffmegDemuxerStream and put ffmpeg::AVStream in it.&lt;/li&gt;
+      &lt;li&gt;DemuxerStream and a list of Decoders and provides decoded output to Audio/VideoRendererImpl&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Audio Decoder	&lt;strong&gt;FFmpegAudioDecoder&lt;/strong&gt;
+    &lt;ul&gt;
+      &lt;li&gt;FFmpegAudioDecoder is wrapper over audio actual decoders provided by ffmpeg.&lt;/li&gt;
+      &lt;li&gt;On the basis of audio codec information we determine using demuxer, FFmpegAudioDecoder initialise respective ffmpeg decoder.&lt;/li&gt;
+      &lt;li&gt;FFmpegAudioDecoder ask ffmpeg to decode frames present inside encoded ffmpegDemuxerStreams::AudioStreams.&lt;/li&gt;
+      &lt;li&gt;Decoded frames generated by FFmpegAudioDecoder are consumed by AudioRendererImpl.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Video Decoder	&lt;strong&gt;FFmpegVideoDecoder&lt;/strong&gt;
+    &lt;ul&gt;
+      &lt;li&gt;FFmpegVideoDecoder is wrapper over actual video decoders provided by ffmpeg.&lt;/li&gt;
+      &lt;li&gt;On the basis of video codec information we determine using demuxer, FFmpegVideoDecoder initialise respective ffmpeg decoder.&lt;/li&gt;
+      &lt;li&gt;FFmpegVideoDecoder ask ffmpeg to decode frames present inside encoded ffmpegDemuxerStreams::VideoStreams.&lt;/li&gt;
+      &lt;li&gt;FFmpegVideoDecoder allocates memory for decoded data.(CPU and GPU based on SW/HW decoder)&lt;/li&gt;
+      &lt;li&gt;Decoded frames(videoFrame) generated by FFmpegVideoDecoder are consumed by VideoRendererImpl.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Audio Rendering	&lt;strong&gt;AudioRendererImpl&lt;/strong&gt;
+    &lt;ul&gt;
+      &lt;li&gt;It is responsible for initialization of audio decoder.&lt;/li&gt;
+      &lt;li&gt;AudioRendererImpl talks to an AudioRendererAlgorithm that takes care of queueing audio data and stretching/shrinking audio data.&lt;/li&gt;
+      &lt;li&gt;It will provide decode audio frames to sound card.
+  Video Rendering	VideoRendererImpl&lt;/li&gt;
+      &lt;li&gt;It is responsible for initialization of video decoder.&lt;/li&gt;
+      &lt;li&gt;VideoRendererImpl creates its own thread for the sole purpose of timing frame presentation.&lt;/li&gt;
+      &lt;li&gt;It handles reading from the VideoFrameStream and stores the results in a queue of decoded frames and executing a callback to notify compositing/painting when a frame is ready for rendering.&lt;/li&gt;
+      &lt;li&gt;ready_outputs_ : variable stores decoded data&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;strong&gt;Other important classes:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;WebMediaPlayerImpl&lt;/strong&gt;
+    &lt;ul&gt;
+      &lt;li&gt;Runs in three thread:
+        &lt;ul&gt;
+          &lt;li&gt;Media Thread&lt;/li&gt;
+          &lt;li&gt;Renderer Thread&lt;/li&gt;
+          &lt;li&gt;Compositor thread.&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;The canonical implementation of blink::WebMediaPlayer that’s backed by Pipeline.&lt;/li&gt;
+      &lt;li&gt;Handles normal resource loading, Media Source, and Encrypted Media.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;FFmpegURLProtocol&lt;/strong&gt;
+  It maintain state of your seek and read position while interacting with network using bufferDataSource.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;DecoderBufferQueue&lt;/strong&gt;
+  Maintains a queue of DecoderBuffers in increasing timestamp order.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;strong&gt;Chromium-ffmpeg implementation known facts:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Wrappers written by chromium to make playback responsive are tightly couple with ffmpeg. (They are written considering ffmpeg as underlying media framework and they are not generic)&lt;/li&gt;
+  &lt;li&gt;FFmpeg works on buffers provided by networks(bufferDataSource)&lt;/li&gt;
+  &lt;li&gt;FFmpeg can be decomposed to run in threaded implementation for demuxing, decoding and rendering.&lt;/li&gt;
+  &lt;li&gt;Caching of data is implemented at each filter level.&lt;/li&gt;
+  &lt;li&gt;HTML Media Elements like &lt;audio&gt; &lt;video&gt; and Web audio are depends on chromium-ffmpeg integration. This Media elements uses underlying playback engine (pipeline) and media framework (Ffmpeg).&lt;/video&gt;&lt;/audio&gt;&lt;/li&gt;
+  &lt;li&gt;Ffmpeg supports almost all pixel format but Chromium pipeline supports only famous pixel formats.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;strong&gt;References:&lt;/strong&gt;
+	- https://www.chromium.org/developers/design-documents/video&lt;/p&gt;</content><summary>Video rendering in chromium/nwjs:</summary></entry></feed>
