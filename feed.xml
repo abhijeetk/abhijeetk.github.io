@@ -1,4 +1,381 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom"><generator uri="http://jekyllrb.com" version="3.1.0">Jekyll</generator><link href="http://abhijeetk.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="http://abhijeetk.github.io/" rel="alternate" type="text/html" /><updated>2016-04-19T00:59:06+05:30</updated><id>http://abhijeetk.github.io/</id><title>Abhijeet Kandalkar</title><subtitle>C++ developer and Open Source contributor in Webkit/Chromium. Learning Big DATA!!!</subtitle><entry><title>Building ffmpeg form nwjs/chromium repository</title><link href="http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository/" rel="alternate" type="text/html" title="Building ffmpeg form nwjs/chromium repository" /><published>2016-02-28T00:00:00+05:30</published><updated>2016-02-28T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository</id><content type="html" xml:base="http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository/">&lt;ul&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom"><generator uri="http://jekyllrb.com" version="3.1.0">Jekyll</generator><link href="http://abhijeetk.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="http://abhijeetk.github.io/" rel="alternate" type="text/html" /><updated>2016-12-11T00:49:26+05:30</updated><id>http://abhijeetk.github.io/</id><title>Abhijeet Kandalkar</title><subtitle>C++ developer and Open Source contributor in Webkit/Chromium.</subtitle><entry><title>Up and running WebChimera with nwjs Ubuntu</title><link href="http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-ubuntu/" rel="alternate" type="text/html" title="Up and running WebChimera with nwjs Ubuntu" /><published>2016-11-11T00:00:00+05:30</published><updated>2016-11-11T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-ubuntu</id><content type="html" xml:base="http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-ubuntu/">&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;add-proxy-to-bashrc&quot;&gt;Add proxy to ~/.bashrc&lt;/h3&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;http_proxy&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;http://&amp;lt;user&amp;gt;:&amp;lt;password&amp;gt;@&amp;lt;ip&amp;gt;:&amp;lt;port&amp;gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;https_proxy&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;http://&amp;lt;user&amp;gt;:&amp;lt;password&amp;gt;@&amp;lt;ip&amp;gt;:&amp;lt;port&amp;gt;&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;add-proxy-to-packaging-system&quot;&gt;Add proxy to packaging system&lt;/h3&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;If &lt;strong&gt;sudo apt-get update&lt;/strong&gt; is not working, add below line to &lt;strong&gt;&lt;em&gt;/etc/apt/apt.conf&lt;/em&gt;&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;Create /etc/apt/apt.conf if it doesn’t exist and add line below&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Acquire::http::Proxy &lt;span class=&quot;s2&quot;&gt;&quot;http://&amp;lt;user&amp;gt;:&amp;lt;password&amp;gt;@43.88.64.10:8080&quot;&lt;/span&gt;;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo gedit /etc/apt/apt.conf
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;install-buil-dependencies&quot;&gt;Install buil dependencies&lt;/h3&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo apt-get update
+sudo apt-get install build-essential cmake libvlc-dev
+sudo apt-get install vlc
+sudo apt-get install git
+sudo apt-get install npm 
+npm -v
+npm config &lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;proxy &lt;span class=&quot;s2&quot;&gt;&quot;http://&amp;lt;userid&amp;gt;:&amp;lt;passwd&amp;gt;@43.88.64.10:8080&quot;&lt;/span&gt;
+npm config &lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;https-proxy &lt;span class=&quot;s2&quot;&gt;&quot;http://&amp;lt;userid&amp;gt;:&amp;lt;passwd&amp;gt;@43.88.64.10:8080&quot;&lt;/span&gt;
+sudo npm install -g npm@latest
+npm -v
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;clone-code-and-build-it&quot;&gt;Clone code and build it&lt;/h3&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;mkdir work
+&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;work/
+git clone https://github.com/RSATom/wcjs-ugly-demo.git
+&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;wcjs-ugly-demo/
+./build_nwjs.sh 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;run&quot;&gt;Run&lt;/h3&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;wget http://dl.nwjs.io/v0.12.0/nwjs-v0.12.0-linux-x64.tar.gz
+tar -xvzf nwjs-v0.12.0-linux-x64.tar.gz 
+export PATH=/home/abhijeet/work/wcjs-ugly-demo/nwjs-v0.12.0-linux-x64:&quot;$PATH&quot;
+gedit index.html (Edit it to add http or https URL for video)
+./run_nwjs.sh
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Up-and-running-WebChimera-with-nwjs-ubuntu/WebChimera.png&quot; alt=&quot;alt text&quot; title=&quot;Up and running WebChimera with nwjs Ubuntu&quot; /&gt;&lt;/p&gt;</content><summary>Add proxy to ~/.bashrc</summary></entry><entry><title>Up and running WebChimera with nwjs</title><link href="http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-Win/" rel="alternate" type="text/html" title="Up and running WebChimera with nwjs" /><published>2016-11-11T00:00:00+05:30</published><updated>2016-11-11T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-Win</id><content type="html" xml:base="http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-Win/">&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;add-proxy-to-windows-environment&quot;&gt;Add proxy to windows environment&lt;/h3&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;http_proxy&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;http://&amp;lt;user&amp;gt;:&amp;lt;password&amp;gt;@&amp;lt;ip&amp;gt;:&amp;lt;port&amp;gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;https_proxy&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;http://&amp;lt;user&amp;gt;:&amp;lt;password&amp;gt;@&amp;lt;ip&amp;gt;:&amp;lt;port&amp;gt;&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;install-build-dependencies-for-webchimera&quot;&gt;Install build dependencies for WebChimera&lt;/h3&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Refer link : &lt;a href=&quot;https://github.com/RSATom/WebChimera.js#windows&quot;&gt;https://github.com/RSATom/WebChimera.js#windows&lt;/a&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Visual Studio Community 2013/2015 - (I tried with VS2015)&lt;/li&gt;
+  &lt;li&gt;Install VLC Player 32 bit and add it to PATH environment variable (Used to build webchimera)&lt;/li&gt;
+  &lt;li&gt;CMake - cmake-3.6.0-rc2-win64-x64.msi&lt;/li&gt;
+  &lt;li&gt;Node.js&lt;/li&gt;
+  &lt;li&gt;Install &lt;strong&gt;NW.js ia32&lt;/strong&gt; add it to PATH environment variable (Used to run player)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;add-proxy-to-npm-packaging-system&quot;&gt;Add proxy to npm packaging system&lt;/h3&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;npm config &lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;proxy http://&amp;lt;user&amp;gt;:&amp;lt;password&amp;gt;@&amp;lt;ip&amp;gt;:&amp;lt;port&amp;gt; 
+npm config &lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;https-proxy http://&amp;lt;user&amp;gt;:&amp;lt;password&amp;gt;@&amp;lt;ip&amp;gt;:&amp;lt;port&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Check npm configuration in &lt;strong&gt;C:\Users&amp;lt;user&amp;gt;.npmrc&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;https-proxy&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;http://&amp;lt;user&amp;gt;:&amp;lt;password&amp;gt;@43.88.64.10:8080/
+&lt;span class=&quot;nv&quot;&gt;proxy&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;http://&amp;lt;user&amp;gt;:&amp;lt;password&amp;gt;@43.88.64.10:8080/
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;check-cmake-generators&quot;&gt;Check cmake generators&lt;/h3&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;cmake --help
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Up-and-running-WebChimera-with-nwjs-win/cmake.png&quot; alt=&quot;alt text&quot; title=&quot;Up and running WebChimera with nwjs&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;clone-code-and-build-it&quot;&gt;Clone code and build it&lt;/h3&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;git clone https://github.com/RSATom/wcjs-ugly-demo.git
+&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;wcjs-ugly-demo/
+build_nwjs.cmd
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;run&quot;&gt;Run&lt;/h3&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;run_nwjs.cmd
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Up-and-running-WebChimera-with-nwjs-win/nw-wcjs-win.png&quot; alt=&quot;alt text&quot; title=&quot;Up and running WebChimera with nwjs&quot; /&gt;&lt;/p&gt;</content><summary>Add proxy to windows environment</summary></entry><entry><title>Up and running webassembly in browser</title><link href="http://abhijeetk.github.io/Up-and-running-webassembly/" rel="alternate" type="text/html" title="Up and running webassembly in browser" /><published>2016-10-10T00:00:00+05:30</published><updated>2016-10-10T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Up-and-running-webassembly</id><content type="html" xml:base="http://abhijeetk.github.io/Up-and-running-webassembly/">&lt;h2 id=&quot;asm-to-webassembly&quot;&gt;ASM to WebAssembly&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;prerequisite&quot;&gt;Prerequisite&lt;/h3&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Visual Studio 2015&lt;/li&gt;
+  &lt;li&gt;cmake&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;clone-binaryentranscompiler-for-wasm&quot;&gt;Clone binaryen(transcompiler for wasm)&lt;/h3&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;mkdir wasmdemo
+&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;wasmdemo
+git clone https://github.com/WebAssembly/binaryen.git
+&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;binaryen
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;build-code&quot;&gt;Build code&lt;/h3&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;wasmdemo&lt;span class=&quot;se&quot;&gt;\b&lt;/span&gt;inaryen&amp;gt;cmake .
+wasmdemo&lt;span class=&quot;se&quot;&gt;\b&lt;/span&gt;inaryen&amp;gt;cmake --build . --config Release
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Up-and-running-webassembly/binaryenBuild.png&quot; alt=&quot;alt text&quot; title=&quot;Up and running webassembly in browser&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;utilities-gets-generated-after-build-in-binaryenbin&quot;&gt;Utilities gets generated after build in binaryen/bin&lt;/h3&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Up-and-running-webassembly/Utilities.png&quot; alt=&quot;alt text&quot; title=&quot;Up and running webassembly in browser&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;create-helloworldasmjs-file-with-content-below&quot;&gt;Create hello_world.asm.js file with content below&lt;/h3&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;function &lt;/span&gt;MyMathModule&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;global&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;s2&quot;&gt;&quot;use asm&quot;&lt;/span&gt;;
+    var exp &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; global.Math.exp;
+    &lt;span class=&quot;k&quot;&gt;function &lt;/span&gt;doubleExp&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;value&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        value &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; +value;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; +&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;+exp&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;+value&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;*&lt;/span&gt; 2.0&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; doubleExp: doubleExp &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Up-and-running-webassembly/asm2wasm.png&quot; alt=&quot;alt text&quot; title=&quot;Up and running webassembly in browser&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;wasm-asexe-is-a-wasm-assembler-which-converts-intermediate-ast-to-wasm-binary&quot;&gt;wasm-as.exe is a wasm assembler which converts intermediate AST to wasm binary&lt;/h3&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;wasmdemo\binaryen\bin&amp;gt;wasm-as.exe hello_world.wast -o hello_world.wasm
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Up-and-running-webassembly/wasm-as.png&quot; alt=&quot;alt text&quot; title=&quot;Up and running webassembly in browser&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;running-webassembly-in-browser&quot;&gt;Running WebAssembly in Browser&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;We need to access WebAssembly on the Web is through an explicit JS API.
+Refer &lt;a href=&quot;https://github.com/WebAssembly/design/blob/master/JS.md&quot;&gt;https://github.com/WebAssembly/design/blob/master/JS.md&lt;/a&gt; for more information.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Create file &lt;em&gt;index.html&lt;/em&gt; with content below :&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;script&amp;gt;
+fetch&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;hello_world.wasm&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+.then&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;response&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;return &lt;/span&gt;response.arrayBuffer&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;;
+&lt;span class=&quot;o&quot;&gt;})&lt;/span&gt;
+.then&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;buffer&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+var dependencies &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+&lt;span class=&quot;s2&quot;&gt;&quot;global&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{}&lt;/span&gt;,
+&lt;span class=&quot;s2&quot;&gt;&quot;env&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;;
+dependencies[&lt;span class=&quot;s2&quot;&gt;&quot;global.Math&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; window.Math;
+var moduleBufferView &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; new Uint8Array&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;buffer&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;;
+var myMathModule &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; Wasm.instantiateModule&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;moduleBufferView, dependencies&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;;
+console.log&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;myMathModule.exports.doubleExp&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;;
+&lt;span class=&quot;k&quot;&gt;for&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;var i &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; 0; i &amp;lt; 5; i++&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+console.log&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;myMathModule.exports.doubleExp&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;i&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt;;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;})&lt;/span&gt;;
+&amp;lt;/script&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Up-and-running-webassembly/server_content.png&quot; alt=&quot;alt text&quot; title=&quot;Up and running webassembly in browser&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Run code through local server and open file in &lt;strong&gt;Chrome Canary&lt;/strong&gt; web browser.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;em&gt;Other browsers might give an error as binaryen version used to build wasm file and binaryen version inside browser is different.&lt;/em&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;TypeError: wasm validation error at offset 8: failed to match binary version
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;output&quot;&gt;Output&lt;/h3&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Up-and-running-webassembly/output.png&quot; alt=&quot;alt text&quot; title=&quot;Up and running webassembly in browser&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;references&quot;&gt;References&lt;/h3&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://cultureofdevelopment.com/blog/build-your-first-thing-with-web-assembly/&quot;&gt;http://cultureofdevelopment.com/blog/build-your-first-thing-with-web-assembly/&lt;/a&gt;
+&lt;a href=&quot;https://github.com/WebAssembly/design/blob/master/JS.md&quot;&gt;https://github.com/WebAssembly/design/blob/master/JS.md&lt;/a&gt;
+&lt;a href=&quot;https://github.com/brakmic/brakmic/blob/master/webassembly/COMPILING_WIN32.md&quot;&gt;https://github.com/brakmic/brakmic/blob/master/webassembly/COMPILING_WIN32.md&lt;/a&gt;&lt;/p&gt;</content><summary>ASM to WebAssembly</summary></entry><entry><title>Up and running ASM.js in browser</title><link href="http://abhijeetk.github.io/Up-and-running-ASMjs/" rel="alternate" type="text/html" title="Up and running ASM.js in browser" /><published>2016-07-10T00:00:00+05:30</published><updated>2016-07-10T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Up-and-running-ASMjs</id><content type="html" xml:base="http://abhijeetk.github.io/Up-and-running-ASMjs/">&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;install-emscripten-sdk&quot;&gt;Install Emscripten SDK&lt;/h3&gt;
+    &lt;p&gt;Download Emscripten SDK Offline Installer and install it. For more information about installation process refer &lt;a href=&quot;https://kripken.github.io/emscripten-site/docs/getting_started/index.html&quot;&gt;https://kripken.github.io/emscripten-site/docs/getting_started/index.html&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;check-emscripten-installation&quot;&gt;Check Emscripten installation&lt;/h3&gt;
+    &lt;p&gt;Click on &lt;em&gt;Windows -&amp;gt; Search&lt;/em&gt; and search for Emscripten Command Prompt. Check Emscripten version.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;emcc -v
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;emcc is transcompiler to compile C/C++ code to javascript code.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Up-and-running-ASM-js/emcc_version.png&quot; alt=&quot;alt text&quot; title=&quot;Up and running ASM.js in browser&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;create-cc-test-file&quot;&gt;Create C/C++ test file&lt;/h3&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;mkdir asmdemo
+&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;asmdemo
+copy NUL hello-world.c &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;create hello-world.c&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Copy following content into newly created hello-world.c&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;#include&amp;lt;stdio.h&amp;gt;&lt;/span&gt;
+int main&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nb&quot;&gt;printf&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;hello, world!&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;;
+  &lt;span class=&quot;k&quot;&gt;return &lt;/span&gt;0;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;compile-cc-code-using-emcc&quot;&gt;Compile C/C++ code using emcc&lt;/h3&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;emcc hello-world.c
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;it will create file name a.out.js&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;run&quot;&gt;Run&lt;/h3&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;node a.out.js
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Up-and-running-ASM-js/compile-n-run.png&quot; alt=&quot;alt text&quot; title=&quot;Up and running ASM.js in browser&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;h3 id=&quot;asmjs-in-browser&quot;&gt;ASM.js in Browser&lt;/h3&gt;
+  &lt;/li&gt;
+  &lt;li&gt;We want HTML so that we can view it in the browser. Enter this command to specify and HTML document.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;emcc hello-world.c -o hello.html
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Open hello.html that with your browser, and you can see it as a web page.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/Up-and-running-ASM-js/emcc-in-browser.png&quot; alt=&quot;alt text&quot; title=&quot;Up and running ASM.js in browser&quot; /&gt;&lt;/p&gt;</content><summary>Install Emscripten SDK
+    Download Emscripten SDK Offline Installer and install it. For more information about installation process refer https://kripken.github.io/emscripten-site/docs/getting_started/index.html</summary></entry><entry><title>Building ffmpeg form nwjs/chromium repository</title><link href="http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository/" rel="alternate" type="text/html" title="Building ffmpeg form nwjs/chromium repository" /><published>2016-02-28T00:00:00+05:30</published><updated>2016-02-28T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository</id><content type="html" xml:base="http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository/">&lt;ul&gt;
   &lt;li&gt;
     &lt;p&gt;Open VS2013 x64 Native Tools Command Prompt
 C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\Shortcuts&lt;/p&gt;
@@ -450,6 +827,6 @@ Pipeline is completely pull-based and relies on the system clock (vsync) to driv
 &lt;hr /&gt;
 
 &lt;p&gt;&lt;strong&gt;References:&lt;/strong&gt;
-	- https://www.chromium.org/developers/design-documents/video&lt;/p&gt;</content><summary>Video rendering in chromium/nwjs:</summary></entry><entry><title>Life cycle of Video element in chromium(m41)</title><link href="http://abhijeetk.github.io/Video-rendering-in-chromium(Sequence-diagram)/" rel="alternate" type="text/html" title="Life cycle of Video element in chromium(m41)" /><published>2016-02-06T00:00:00+05:30</published><updated>2016-02-06T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Video-rendering-in-chromium(Sequence diagram)</id><content type="html" xml:base="http://abhijeetk.github.io/Video-rendering-in-chromium(Sequence-diagram)/">&lt;h2 id=&quot;life-cycle-of-video-element&quot;&gt;Life cycle of Video element:&lt;/h2&gt;
+	- https://www.chromium.org/developers/design-documents/video&lt;/p&gt;</content><summary>Video rendering in chromium/nwjs:</summary></entry><entry><title>Life cycle of Video element in chromium(m41)</title><link href="http://abhijeetk.github.io/Video-rendering-in-chromium(Sequence-diagram)/" rel="alternate" type="text/html" title="Life cycle of Video element in chromium(m41)" /><published>2016-02-06T00:00:00+05:30</published><updated>2016-02-06T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Video-rendering-in-chromium(Sequence-diagram)</id><content type="html" xml:base="http://abhijeetk.github.io/Video-rendering-in-chromium(Sequence-diagram)/">&lt;h2 id=&quot;life-cycle-of-video-element&quot;&gt;Life cycle of Video element:&lt;/h2&gt;
 
 &lt;p&gt;&lt;img src=&quot;/images/video_rendering_sequence_diagram/image00001.jpeg&quot; alt=&quot;Sequence diagram for Life cycle of Video element in chromium(m41)&quot; title=&quot;Life cycle of Video element in chromium(m41)&quot; /&gt;&lt;/p&gt;</content><summary>Life cycle of Video element:</summary></entry></feed>

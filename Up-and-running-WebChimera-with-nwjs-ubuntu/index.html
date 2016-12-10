@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>404 - Page not found – Abhijeet Kandalkar – C++ developer and Open Source contributor in Webkit/Chromium.</title>
+    <title>Up and running WebChimera with nwjs Ubuntu – Abhijeet Kandalkar – C++ developer and Open Source contributor in Webkit/Chromium.</title>
 
         <meta charset="utf-8" />
     <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
@@ -9,14 +9,26 @@
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
 
     
-    <meta name="description" content="C++ developer and Open Source contributor in Webkit/Chromium.">
-    <meta property="og:description" content="C++ developer and Open Source contributor in Webkit/Chromium." />
+    <meta name="description" content="
+  
+    Add proxy to ~/.bashrc
+  
+
+
+" />
+    <meta property="og:description" content="
+  
+    Add proxy to ~/.bashrc
+  
+
+
+" />
     
     <meta name="author" content="Abhijeet Kandalkar" />
 
     
-    <meta property="og:title" content="404 - Page not found" />
-    <meta property="twitter:title" content="404 - Page not found" />
+    <meta property="og:title" content="Up and running WebChimera with nwjs Ubuntu" />
+    <meta property="twitter:title" content="Up and running WebChimera with nwjs Ubuntu" />
     
 
     <!--[if lt IE 9]>
@@ -50,16 +62,95 @@
     </div>
 
     <div id="main" role="main" class="container">
-      <article class="page">
-
-  <h1>404 - Page not found</h1>
+      <article class="post">
+  <h1>Up and running WebChimera with nwjs Ubuntu</h1>
 
   <div class="entry">
-    <p>Sorry, we can’t find that page that you’re looking for. You can try again by going <a href="/">back to the homepage</a>.</p>
+    <ul>
+  <li>
+    <h3 id="add-proxy-to-bashrc">Add proxy to ~/.bashrc</h3>
+  </li>
+</ul>
 
-<p><a href="/"><img src="/images/404.jpg" alt="Constructocat by https://github.com/jasoncostello" style="width: 400px;" /></a></p>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nb">export </span><span class="nv">http_proxy</span><span class="o">=</span><span class="s2">"http://&lt;user&gt;:&lt;password&gt;@&lt;ip&gt;:&lt;port&gt;"</span>
+<span class="nb">export </span><span class="nv">https_proxy</span><span class="o">=</span><span class="s2">"http://&lt;user&gt;:&lt;password&gt;@&lt;ip&gt;:&lt;port&gt;"</span>
+</code></pre>
+</div>
+
+<ul>
+  <li>
+    <h3 id="add-proxy-to-packaging-system">Add proxy to packaging system</h3>
+  </li>
+</ul>
+
+<p>If <strong>sudo apt-get update</strong> is not working, add below line to <strong><em>/etc/apt/apt.conf</em></strong>.</p>
+
+<p>Create /etc/apt/apt.conf if it doesn’t exist and add line below</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>Acquire::http::Proxy <span class="s2">"http://&lt;user&gt;:&lt;password&gt;@43.88.64.10:8080"</span>;
+</code></pre>
+</div>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>sudo gedit /etc/apt/apt.conf
+</code></pre>
+</div>
+
+<ul>
+  <li>
+    <h3 id="install-buil-dependencies">Install buil dependencies</h3>
+  </li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>sudo apt-get update
+sudo apt-get install build-essential cmake libvlc-dev
+sudo apt-get install vlc
+sudo apt-get install git
+sudo apt-get install npm 
+npm -v
+npm config <span class="nb">set </span>proxy <span class="s2">"http://&lt;userid&gt;:&lt;passwd&gt;@43.88.64.10:8080"</span>
+npm config <span class="nb">set </span>https-proxy <span class="s2">"http://&lt;userid&gt;:&lt;passwd&gt;@43.88.64.10:8080"</span>
+sudo npm install -g npm@latest
+npm -v
+</code></pre>
+</div>
+
+<ul>
+  <li>
+    <h3 id="clone-code-and-build-it">Clone code and build it</h3>
+  </li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>mkdir work
+<span class="nb">cd </span>work/
+git clone https://github.com/RSATom/wcjs-ugly-demo.git
+<span class="nb">cd </span>wcjs-ugly-demo/
+./build_nwjs.sh 
+</code></pre>
+</div>
+
+<ul>
+  <li>
+    <h3 id="run">Run</h3>
+  </li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>wget http://dl.nwjs.io/v0.12.0/nwjs-v0.12.0-linux-x64.tar.gz
+tar -xvzf nwjs-v0.12.0-linux-x64.tar.gz 
+export PATH=/home/abhijeet/work/wcjs-ugly-demo/nwjs-v0.12.0-linux-x64:"$PATH"
+gedit index.html (Edit it to add http or https URL for video)
+./run_nwjs.sh
+</code></pre>
+</div>
+
+<p><img src="/images/Up-and-running-WebChimera-with-nwjs-ubuntu/WebChimera.png" alt="alt text" title="Up and running WebChimera with nwjs Ubuntu" /></p>
 
   </div>
+
+  <div class="date">
+    Written on November 11, 2016
+  </div>
+
+  
 </article>
 
     </div>

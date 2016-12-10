@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
+<loc>http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-ubuntu/</loc>
+<lastmod>2016-11-11T00:00:00+05:30</lastmod>
+</url>
+<url>
+<loc>http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-Win/</loc>
+<lastmod>2016-11-11T00:00:00+05:30</lastmod>
+</url>
+<url>
+<loc>http://abhijeetk.github.io/Up-and-running-webassembly/</loc>
+<lastmod>2016-10-10T00:00:00+05:30</lastmod>
+</url>
+<url>
+<loc>http://abhijeetk.github.io/Up-and-running-ASMjs/</loc>
+<lastmod>2016-07-10T00:00:00+05:30</lastmod>
+</url>
+<url>
 <loc>http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository/</loc>
 <lastmod>2016-02-28T00:00:00+05:30</lastmod>
 </url>
