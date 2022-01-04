@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Building nwjs on Windows7 64 bit – Abhijeet Kandalkar – C++ developer and Open Source contributor in Webkit/Chromium.</title>
+    <title>Building nwjs on Windows7 64 bit – Abhijeet Kandalkar – Software Engineer @ Igalia | C++ developer | Open Source contributor in Webkit/Chromium</title>
 
         <meta charset="utf-8" />
     <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
@@ -9,16 +9,14 @@
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
 
     
-    <meta name="description" content="Install depot_tools :
+    <meta name="description" content="##Install depot_tools : ##
 
   Download code
-
 
 " />
-    <meta property="og:description" content="Install depot_tools :
+    <meta property="og:description" content="##Install depot_tools : ##
 
   Download code
-
 
 " />
     
@@ -34,7 +32,7 @@
     <![endif]-->
 
     <link rel="stylesheet" type="text/css" href="/style.css" />
-    <link rel="alternate" type="application/rss+xml" title="Abhijeet Kandalkar - C++ developer and Open Source contributor in Webkit/Chromium." href="/feed.xml" />
+    <link rel="alternate" type="application/rss+xml" title="Abhijeet Kandalkar - Software Engineer @ Igalia | C++ developer | Open Source contributor in Webkit/Chromium" href="/feed.xml" />
 
     <!-- Created with Jekyll Now - http://github.com/barryclark/jekyll-now -->
   </head>
@@ -47,7 +45,7 @@
 
           <div class="site-info">
             <h1 class="site-name"><a href="/">Abhijeet Kandalkar</a></h1>
-            <p class="site-description">C++ developer and Open Source contributor in Webkit/Chromium.</p>
+            <p class="site-description">Software Engineer @ Igalia | C++ developer | Open Source contributor in Webkit/Chromium</p>
           </div>
 
           <nav>
@@ -64,41 +62,38 @@
   <h1>Building nwjs on Windows7 64 bit</h1>
 
   <div class="entry">
-    <h2 id="install-depottools-">Install depot_tools :</h2>
+    <p>##Install depot_tools : ##</p>
 <ul>
   <li>Download code</li>
 </ul>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>$ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-</code></pre>
-</div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+</code></pre></div></div>
 
 <ul>
   <li>Add depot_tools to your PATH:</li>
 </ul>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>$ export PATH=$PATH:~/depot_tools (MAC/Linux)
-</code></pre>
-</div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ export PATH=$PATH:~/depot_tools (MAC/Linux)
+</code></pre></div></div>
 
 <p>On Windows, add depot_tools to PATH enviorment variable.</p>
 
-<h2 id="get-nwjs-source-code-">Get nwjs source code :</h2>
+<p>##Get nwjs source code : ##</p>
 <ul>
   <li>Create source directory and download configuration .gclient file.</li>
 </ul>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>    node-webkit
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    node-webkit
     cd node-webkit
     touch .gclient
     vi .gclient
-</code></pre>
-</div>
+</code></pre></div></div>
 <ul>
   <li>Now edit the file .gclient, and paste this into it:</li>
 </ul>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>    solutions = [
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    solutions = [
        { "name"        : "src",
          "url"         : "https://github.com/nwjs/chromium.src.git@origin/nw12",
          "deps_file"   : "DEPS",
@@ -116,43 +111,37 @@
          "safesync_url": "",
        },
     ]
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <ul>
   <li>Environment variables</li>
 </ul>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>    DEPOT_TOOLS_WIN_TOOLCHAIN=0 
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    DEPOT_TOOLS_WIN_TOOLCHAIN=0 
     DXSDK_DIR=C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\  
     GYP_GENERATOR=ninja,msvs
     GYP_GENERATORS=ninja
     GYP_DEFINES=nwjs_sdk=1 disable_nacl=0 proprietary_codecs=1
     GYP_MSVS_VERSION=2013
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Add machine architecture information:
 For 64 bit OS :</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>    $GYP_DEFINES=host_arch=x64 target_arch=x64 
-</code></pre>
-</div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    $GYP_DEFINES=host_arch=x64 target_arch=x64 
+</code></pre></div></div>
 
-<h2 id="sync-code">Sync Code</h2>
-<div class="highlighter-rouge"><pre class="highlight"><code>    $node-webkit&gt;gclient sync
-</code></pre>
-</div>
+<p>##Sync Code##</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    $node-webkit&gt;gclient sync
+</code></pre></div></div>
 
-<h2 id="build">Build</h2>
-<div class="highlighter-rouge"><pre class="highlight"><code>    $ninja -C out/Release_x64 nw -j16
-</code></pre>
-</div>
+<p>##Build##</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    $ninja -C out/Release_x64 nw -j16
+</code></pre></div></div>
 
-<h2 id="clean-code">Clean code</h2>
-<div class="highlighter-rouge"><pre class="highlight"><code>    $ninja -C out/Release_x64 -t clean
-</code></pre>
-</div>
+<p>##Clean code##</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    $ninja -C out/Release_x64 -t clean
+</code></pre></div></div>
 
   </div>
 

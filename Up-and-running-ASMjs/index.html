@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Up and running ASM.js in browser – Abhijeet Kandalkar – C++ developer and Open Source contributor in Webkit/Chromium.</title>
+    <title>Up and running ASM.js in browser – Abhijeet Kandalkar – Software Engineer @ Igalia | C++ developer | Open Source contributor in Webkit/Chromium</title>
 
         <meta charset="utf-8" />
     <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
@@ -15,14 +15,12 @@
     Download Emscripten SDK Offline Installer and install it. For more information about installation process refer https://kripken.github.io/emscripten-site/docs/getting_started/index.html
   
 
-
 " />
     <meta property="og:description" content="
   
     Install Emscripten SDK
     Download Emscripten SDK Offline Installer and install it. For more information about installation process refer https://kripken.github.io/emscripten-site/docs/getting_started/index.html
   
-
 
 " />
     
@@ -38,7 +36,7 @@
     <![endif]-->
 
     <link rel="stylesheet" type="text/css" href="/style.css" />
-    <link rel="alternate" type="application/rss+xml" title="Abhijeet Kandalkar - C++ developer and Open Source contributor in Webkit/Chromium." href="/feed.xml" />
+    <link rel="alternate" type="application/rss+xml" title="Abhijeet Kandalkar - Software Engineer @ Igalia | C++ developer | Open Source contributor in Webkit/Chromium" href="/feed.xml" />
 
     <!-- Created with Jekyll Now - http://github.com/barryclark/jekyll-now -->
   </head>
@@ -51,7 +49,7 @@
 
           <div class="site-info">
             <h1 class="site-name"><a href="/">Abhijeet Kandalkar</a></h1>
-            <p class="site-description">C++ developer and Open Source contributor in Webkit/Chromium.</p>
+            <p class="site-description">Software Engineer @ Igalia | C++ developer | Open Source contributor in Webkit/Chromium</p>
           </div>
 
           <nav>
@@ -79,9 +77,8 @@
   </li>
 </ul>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>emcc -v
-</code></pre>
-</div>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>emcc <span class="nt">-v</span>
+</code></pre></div></div>
 
 <p><strong>emcc is transcompiler to compile C/C++ code to javascript code.</strong></p>
 
@@ -93,21 +90,19 @@
   </li>
 </ul>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>mkdir asmdemo
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">mkdir </span>asmdemo
 <span class="nb">cd </span>asmdemo
 copy NUL hello-world.c <span class="o">(</span>create hello-world.c<span class="o">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Copy following content into newly created hello-world.c</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="c">#include&lt;stdio.h&gt;</span>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#include&lt;stdio.h&gt;</span>
 int main<span class="o">()</span> <span class="o">{</span>
-  <span class="nb">printf</span><span class="o">(</span><span class="s2">"hello, world!</span><span class="se">\n</span><span class="s2">"</span><span class="o">)</span>;
-  <span class="k">return </span>0;
+  <span class="nb">printf</span><span class="o">(</span><span class="s2">"hello, world!</span><span class="se">\n</span><span class="s2">"</span><span class="o">)</span><span class="p">;</span>
+  <span class="k">return </span>0<span class="p">;</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <ul>
   <li>
@@ -115,9 +110,8 @@ int main<span class="o">()</span> <span class="o">{</span>
   </li>
 </ul>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>emcc hello-world.c
-</code></pre>
-</div>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>emcc hello-world.c
+</code></pre></div></div>
 
 <p>it will create file name a.out.js</p>
 
@@ -127,9 +121,8 @@ int main<span class="o">()</span> <span class="o">{</span>
   </li>
 </ul>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>node a.out.js
-</code></pre>
-</div>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>node a.out.js
+</code></pre></div></div>
 
 <p><img src="/images/Up-and-running-ASM-js/compile-n-run.png" alt="alt text" title="Up and running ASM.js in browser" /></p>
 
@@ -140,9 +133,8 @@ int main<span class="o">()</span> <span class="o">{</span>
   <li>We want HTML so that we can view it in the browser. Enter this command to specify and HTML document.</li>
 </ul>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>emcc hello-world.c -o hello.html
-</code></pre>
-</div>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>emcc hello-world.c <span class="nt">-o</span> hello.html
+</code></pre></div></div>
 
 <ul>
   <li>Open hello.html that with your browser, and you can see it as a web page.</li>

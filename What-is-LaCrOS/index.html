@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>For resume plase contact me @ – Abhijeet Kandalkar – Software Engineer @ Igalia | C++ developer | Open Source contributor in Webkit/Chromium</title>
+    <title>Introduction to LaCrOS – Abhijeet Kandalkar – Software Engineer @ Igalia | C++ developer | Open Source contributor in Webkit/Chromium</title>
 
         <meta charset="utf-8" />
     <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
@@ -9,14 +9,16 @@
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
 
     
-    <meta name="description" content="Software Engineer @ Igalia | C++ developer | Open Source contributor in Webkit/Chromium">
-    <meta property="og:description" content="Software Engineer @ Igalia | C++ developer | Open Source contributor in Webkit/Chromium" />
+    <meta name="description" content="Happy new year to All !!!
+" />
+    <meta property="og:description" content="Happy new year to All !!!
+" />
     
     <meta name="author" content="Abhijeet Kandalkar" />
 
     
-    <meta property="og:title" content="For resume plase contact me @" />
-    <meta property="twitter:title" content="For resume plase contact me @" />
+    <meta property="og:title" content="Introduction to LaCrOS" />
+    <meta property="twitter:title" content="Introduction to LaCrOS" />
     
 
     <!--[if lt IE 9]>
@@ -50,14 +52,152 @@
     </div>
 
     <div id="main" role="main" class="container">
-      <article class="page">
-
-  <h1>For resume plase contact me @</h1>
+      <article class="post">
+  <h1>Introduction to LaCrOS</h1>
 
   <div class="entry">
-    <p><a href="mailto:kandalkar.abhijeet58@gmail.com">kandalkar.abhijeet58@gmail.com</a></p>
+    <p>Happy new year to All !!!</p>
+
+<p>Igalia has been collaborating with Google on the LaCrOS project for over a year and has presented updates of the LaCrOS project in the last two BlinkOns.</p>
+
+<p>See ours lightning talk during <a href="https://www.youtube.com/watch?v=6Wgh5x7mLSM&amp;t=1621s">BlinkOn13</a> , and our update from <a href="https://www.youtube.com/watch?v=VrEP7SPfQVM&amp;t=2514s">BlinkOn14</a></p>
+
+<h2 id="what-is-lacros-">What is LaCrOS ?</h2>
+
+<p>For the unfamiliar , the <a href="https://source.chromium.org/chromium/chromium/src/+/main:docs/lacros.md">LaCrOS</a> project decouples the Chrome browser from the Chrome OS window manager and system UI. The name comes from <strong>L</strong>inux <strong>A</strong>nd <strong>C</strong>h<strong>R</strong>ome<strong>OS</strong>.</p>
+
+<p>But, why do we need to do that ? Let’s jump to more details.</p>
+
+<h2 id="why-lacros-">Why LaCrOs ?</h2>
+
+<p>Previously, ChromeOS and Chrome Browser shared the same window manager and system UI binaries, making it difficult for Chrome Browser alone to be updated on Chromebook devices.</p>
+
+<p>This means, when a ChromeOS device is updated, only then the Chrome Browser is updated. It might be frustrating for someone who frequently switches from the latest desktop browser to a browser on ChromeOS.</p>
+
+<p>LaCrOS is Google’s solution to this problem. It allows browsers on ChromeOS to update independently of the operating system. Now, old chromebook devices also can have the latest chrome-browser.</p>
+
+<blockquote>
+  <p>Separating the browser from the OS itself allows the end user to update the browser independently as we do for other devices like desktop, mobile.</p>
+</blockquote>
+
+<p>On Chrome OS, the system UI (including the Ash Window Manager, login screen, etc) and the Web Browser are included in the same binary.  LaCrOS separates this functionality into two binaries. Both of these binaries are built from the same chromium git repository, but they might have different versions. This means, Web Browser and ChromeOS can have different versions and will be updated separately.</p>
+
+<p>Some of the key LaCrOS components are Chrome OS’ built-in Wayland Compositor (<a href="https://source.chromium.org/chromium/chromium/src/+/main:components/exo/">Exo</a>) and the native Linux Wayland support (on top of <a href="https://source.chromium.org/chromium/chromium/src/+/main:docs/ozone_overview.md">Ozone</a>). As part of the project, Linux <a href="https://chromium.googlesource.com/chromium/src/+/main/ui/ozone/platform/wayland/README.md">Wayland</a> is being enhanced to implement Chrome OS specific functionality so that the a newly created browser acts like a Web Browser under ChromeOS.</p>
+
+<p>This new browser which uses Linux Wayland support underneath to communicate with ChromeOS is called a LaCrOS(<strong>L</strong>inux <strong>A</strong>nd <strong>C</strong>h<strong>R</strong>ome<strong>OS</strong>).</p>
+
+<p>In terms of wayland terminology, a LaCrOS-Chrome is a wayland-client and Exo is a wayland-server.</p>
+
+<p>LaCrOS development involves both client and server code changes. ChromeOS implements handlers for requests coming from LaCrOS Browser, and LaCrOS Browser implements handlers for events coming from ChromeOS.</p>
+
+<h2 id="what-is-ash-chrome-">What is Ash-Chrome ?</h2>
+
+<p>Ash-Chrome is the default browser of ChromeOS which is tightly coupled with ChromeOS. For client-server architecture, Ash-Chrome is often referred as a server and used as a synonymous to ChromeOS or Exo.</p>
+
+<p>LaCrOS client request a information from a Ash-Chrome server.</p>
+
+<h2 id="what-is-exo-">What is Exo ?</h2>
+
+<p><a href="https://source.chromium.org/chromium/chromium/src/+/main:components/exo/">Exo</a>(or Exosphere) is a wayland server implementation. LaCrOS is a one of the client of Exo. There are other clients of Exo which includes ARC++(Android Apps on ChromeOS) and Crostini (Linux apps on Chrome OS).</p>
+
+<p>For more information, refer Exosphere, Chromium and crosvm talk.</p>
+
+<h2 id="a-simplified-lacros-architecture">A simplified LaCrOS Architecture</h2>
+
+<p><img src="/images/introduction-to-LaCrOS/lacros-architecture.jpg" alt="" /></p>
+
+<p>In the above diagram, LaCrOS Browser communicates with ChromeOS(Ash-Chrome) using a wayland protocol. LaCrOS uses various wayland protocols</p>
+<ul>
+  <li><a href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/wayland-protocols/">Official</a> wayland protocols - These are developed by the Wayland community and well known desktop environments.</li>
+  <li><a href="https://source.chromium.org/chromium/chromium/src/+/main:components/exo/wayland/protocol/">Non-official</a> wayland protocols - These protocols are specific to ChromeOS.</li>
+</ul>
+
+<p>Exo is a wayland server and it supports both the official and non-official wayland protocols. Just for an example, <a href="https://source.chromium.org/chromium/chromium/src/+/main:components/exo/wayland/protocol/aura-shell.xml">aura_shell</a> is a non-official protocol which allows the LaCrOS browser to support the ChromeOS specific features like snapping a window and many more.</p>
+
+<p>Implementation of LaCrOS is inspired from Chrome on desktop linux. My colleague <a href="mailto:msisov@igalia.com">Maksim</a> in his talk <a href="https://www.youtube.com/watch?v=8t4DUIZ94pk">Waylandifying Chromium</a> has explained how a Wayland is used in Chromium.</p>
+
+<p>Next obvious question would be how to build and run the LaCrOS Browser and contribute to feature LaCrOS development. Unfortunately, as of now LaCrOS is not open to the public and information is mostly internal to Google.</p>
+
+<h2 id="lacros-window-during-blinkon-13">LaCrOS window during BlinkOn 13</h2>
+
+<p><img src="/images/introduction-to-LaCrOS/BlinkOn13.jpeg" alt="" /></p>
+
+<p>In the above image, the window of LaCrOS-Chrome looks visually different from the Ash-Chrome. If you look carefully, you will notice that the scrollbar, browser window frame appear differently and LaCrOS-Chrome does not have drop shadows.</p>
+
+<h2 id="lacros-window-during-blinkon-14">LaCrOS window during BlinkOn 14</h2>
+
+<p><img src="/images/introduction-to-LaCrOS/BlinkOn14.jpeg" alt="" /></p>
+
+<p>This image depicts the state of LaCrOS Browser during a BlinkOn14. As you can see both browsers look almost identical.</p>
+
+<h2 id="igalias-contribution-to-lacros-in-2021">Igalia’s contribution to LaCrOS in 2021</h2>
+<p>To achieve visual parity between both browsers, our team at Igalia has worked to support various features and bugs related to</p>
+<ul>
+  <li>Rounded corners for browser window</li>
+  <li>Scrollbars style, thickness and fade behavior</li>
+  <li>Resizing behavior</li>
+  <li>Shadows (Drop shadow for window &amp; menu, resizer shadow)</li>
+  <li>Menus (Right-Click menus, Three-Dot menus)</li>
+  <li>Tooltips</li>
+  <li>Tablet mode</li>
+  <li>Window Snapping</li>
+  <li>HiDPI/Mixed DPI</li>
+  <li>Touch based window dragging support</li>
+  <li>Multiple display</li>
+  <li>Scaling</li>
+</ul>
+
+<p>LaCrOS Browser evolution in the last one year can be seen in this video.</p>
+
+<figure class="video_container">
+  <iframe src="https://www.youtube.com/embed/LWF-aCcWyLI" frameborder="0" allowfullscreen="true"> </iframe>
+</figure>
+
+<p>This video demonstrated the visual similarities between the Ash-Chrome and LaCrOS-Chrome. You can notice the similarities for</p>
+<ul>
+  <li>Drop shadows for a browser window frame</li>
+  <li>Resizer shadows after hovering a mouse on browser window edges</li>
+  <li>Right-Click menus, Three-Dot menus look and feel is same</li>
+  <li>Scrollbars</li>
+  <li>Window snapping for LaCrOS Browser window</li>
+  <li>Workspace resizing</li>
+</ul>
+
+<h2 id="and-more-">And more …</h2>
+<p>We recently completed the <strong>Multi Desk support</strong> and <strong>WebUI Tab Strip</strong>.</p>
+<ul>
+  <li>Multi-Desk 
+This feayure allows the user to add desks to organize multiple windows and multi-task.
+The LaCrOS-Chrome browser supports this feature by adding a request to a aura_shell wayland protocol. My colleague <a href="mailto:mkim@igalia.com">Minju Kim</a> has contributed to an implementation of this feature.
+See the working of the Multi-Desk in LaCrOS in the video below.</li>
+</ul>
+
+<figure class="video_container" style="margin: 0;width: 100%;height: 0;padding-top: 56.25%;background-color: #ccc;position: relative;">
+  <iframe src="https://www.youtube.com/embed/BuyocSkrbl4" frameborder="0" allowfullscreen="true" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0;"> </iframe>
+</figure>
+
+<ul>
+  <li>WebUi Tab Strip
+This feature adds a new tab bar to the browser, featuring page thumbnail previews and a touch friendly UI. My colleague <a href="mailto:tonikitoo@igalia.com">Antonio</a> has contributed to an implementation of this feature.
+See the working of the WebUi Tab Strip in LaCrOS in the video below.</li>
+</ul>
+
+<figure class="video_container">
+  <iframe src="&lt;update-link-here&gt;" frameborder="0" allowfullscreen="true"> </iframe>
+</figure>
+
+<p>The team is working on various window manager integration issues.</p>
+
+<p>Stay tuned for more updates from Team Igalia on LaCrOS developement :)</p>
+
 
   </div>
+
+  <div class="date">
+    Written on January  3, 2021
+  </div>
+
+  
 </article>
 
     </div>
