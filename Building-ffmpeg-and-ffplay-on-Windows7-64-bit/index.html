@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Building ffmpeg and ffplay on Windows7 64 bit – Abhijeet Kandalkar – C++ developer and Open Source contributor in Webkit/Chromium.</title>
+    <title>Building ffmpeg and ffplay on Windows7 64 bit – Abhijeet Kandalkar – Software Engineer @ Igalia | C++ developer | Open Source contributor in Webkit/Chromium</title>
 
         <meta charset="utf-8" />
     <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
@@ -9,16 +9,14 @@
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
 
     
-    <meta name="description" content="Prerequisite for ffmpeg
+    <meta name="description" content="##Prerequisite for ffmpeg##
 
   Install Msys64 on yourmachine. (msys2-x86_64-20150916.exe)
-
 
 " />
-    <meta property="og:description" content="Prerequisite for ffmpeg
+    <meta property="og:description" content="##Prerequisite for ffmpeg##
 
   Install Msys64 on yourmachine. (msys2-x86_64-20150916.exe)
-
 
 " />
     
@@ -34,7 +32,7 @@
     <![endif]-->
 
     <link rel="stylesheet" type="text/css" href="/style.css" />
-    <link rel="alternate" type="application/rss+xml" title="Abhijeet Kandalkar - C++ developer and Open Source contributor in Webkit/Chromium." href="/feed.xml" />
+    <link rel="alternate" type="application/rss+xml" title="Abhijeet Kandalkar - Software Engineer @ Igalia | C++ developer | Open Source contributor in Webkit/Chromium" href="/feed.xml" />
 
     <!-- Created with Jekyll Now - http://github.com/barryclark/jekyll-now -->
   </head>
@@ -47,7 +45,7 @@
 
           <div class="site-info">
             <h1 class="site-name"><a href="/">Abhijeet Kandalkar</a></h1>
-            <p class="site-description">C++ developer and Open Source contributor in Webkit/Chromium.</p>
+            <p class="site-description">Software Engineer @ Igalia | C++ developer | Open Source contributor in Webkit/Chromium</p>
           </div>
 
           <nav>
@@ -64,7 +62,7 @@
   <h1>Building ffmpeg and ffplay on Windows7 64 bit</h1>
 
   <div class="entry">
-    <h2 id="prerequisite-for-ffmpeg">Prerequisite for ffmpeg</h2>
+    <p>##Prerequisite for ffmpeg##</p>
 <ul>
   <li>
     <p>Install Msys64 on yourmachine. (msys2-x86_64-20150916.exe)</p>
@@ -91,31 +89,28 @@ C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\Shortcuts</p>
   <li>Make sure to use mingw64_shell.bat to have the correct MinGW-w64 environment. Run following commands in MinGW-w64 to install dependencies.</li>
 </ul>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>    <span class="c">#normal msys2 packages</span>
-    pacman -S make pkgconfdiffutils
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="c">#normal msys2 packages</span>
+    pacman <span class="nt">-S</span> make pkgconfdiffutils
     <span class="c"># mingw-w64 packages and toolchains</span>
-    pacman -S mingw-w64-x86_64-yasm mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL
-</code></pre>
-</div>
+    pacman <span class="nt">-S</span> mingw-w64-x86_64-yasm mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL
+</code></pre></div></div>
 
-<h2 id="download-ffmpeg-code">Download ffmpeg code</h2>
+<p>##Download ffmpeg code##</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>    mkdir ffmpeg
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="nb">mkdir </span>ffmpeg
     <span class="nb">cd </span>ffmpeg
     git clone https://github.com/FFmpeg/FFmpeg.git
-</code></pre>
-</div>
+</code></pre></div></div>
 
-<h2 id="build-instructions-for-ffmpeg">Build instructions for ffmpeg</h2>
-<p>Ffmpeg can be built directly using following commands. If you wish to compile shared libraries, add –enable-shared to your configure options.</p>
+<p>##Build instructions for ffmpeg## 
+Ffmpeg can be built directly using following commands. If you wish to compile shared libraries, add –enable-shared to your configure options.</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>    ./configure --toolchain<span class="o">=</span>msvc
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    ./configure <span class="nt">--toolchain</span><span class="o">=</span>msvc
     make
-    make install
-</code></pre>
-</div>
+    make <span class="nb">install</span>
+</code></pre></div></div>
 
-<h2 id="build-instructions-for-ffplay">Build instructions for ffplay</h2>
+<p>##Build instructions for ffplay##</p>
 
 <ul>
   <li>Download SDL from http://www.libsdl.org/release/SDL-devel-1.2.15-VC.zip</li>
@@ -133,23 +128,21 @@ C:\msys64\mingw64\lib</li>
   <li>Open file C:\msys64\mingw64\bin\sdl-config and modify following lines</li>
 </ul>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>        --libs<span class="o">)</span>
-  <span class="nb">echo</span> -L<span class="k">${</span><span class="nv">exec_prefix</span><span class="k">}</span>/lib -lSDLmain -lSDL
-        ;;
-      --static-libs<span class="o">)</span>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        <span class="nt">--libs</span><span class="o">)</span>
+  <span class="nb">echo</span> <span class="nt">-L</span><span class="k">${</span><span class="nv">exec_prefix</span><span class="k">}</span>/lib <span class="nt">-lSDLmain</span> <span class="nt">-lSDL</span>
+        <span class="p">;;</span>
+      <span class="nt">--static-libs</span><span class="o">)</span>
   <span class="c">#    --libs|--static-libs)</span>
-  <span class="nb">echo</span> -L<span class="k">${</span><span class="nv">exec_prefix</span><span class="k">}</span>/lib -lSDLmain -lSDL
-        ;;
-</code></pre>
-</div>
+  <span class="nb">echo</span> <span class="nt">-L</span><span class="k">${</span><span class="nv">exec_prefix</span><span class="k">}</span>/lib <span class="nt">-lSDLmain</span> <span class="nt">-lSDL</span>
+        <span class="p">;;</span>
+</code></pre></div></div>
 
 <ul>
   <li>Run following commands :</li>
 </ul>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>./configure --enable-ffplay --toolchain<span class="o">=</span>msvc --disable-shared --enable-static --enable-sdl --extra-ldflags<span class="o">=</span><span class="s2">"-Wl,-add-stdcall-alias"</span> --enable-memalign-hack --disable-ffmpeg --pkg-config<span class="o">=</span>sdl-config
-</code></pre>
-</div>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./configure <span class="nt">--enable-ffplay</span> <span class="nt">--toolchain</span><span class="o">=</span>msvc <span class="nt">--disable-shared</span> <span class="nt">--enable-static</span> <span class="nt">--enable-sdl</span> <span class="nt">--extra-ldflags</span><span class="o">=</span><span class="s2">"-Wl,-add-stdcall-alias"</span> <span class="nt">--enable-memalign-hack</span> <span class="nt">--disable-ffmpeg</span> <span class="nt">--pkg-config</span><span class="o">=</span>sdl-config
+</code></pre></div></div>
 
   </div>
 
