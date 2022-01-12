@@ -242,10 +242,6 @@ img {
   border-radius: 5px;
 }
 
-.site-info {
-  float: left;
-}
-
 @media screen and (max-width: 640px) {
   .site-info {
     float: none;
