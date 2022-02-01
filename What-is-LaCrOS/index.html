@@ -119,7 +119,7 @@
 <h2 id="build--run">Build &amp; Run</h2>
 <p>Refer to <a href="https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/chromeos_build_instructions.md#chromium-os-on-linux-linux_chromeos">Chromium OS on Linux (linux-chromeos)</a> before building code</p>
 
-<p>You can download a GN args necessary to build a LaCrOS on linux-desktop from an already running <code class="language-plaintext highlighter-rouge">linux-lacros-rel</code> build bot.</p>
+<p>You can download a <a href="https://www.chromium.org/developers/gn-build-configuration/">GN</a> args necessary to build a LaCrOS on linux-desktop from an already running <code class="language-plaintext highlighter-rouge">linux-lacros-rel</code> build bot.</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>chromium/src$tools/mb/mb.py gen -m tryserver.chromium.chromiumos -b \'linux-lacros-rel' out/linux-lacros-rel
 </code></pre></div></div>
@@ -137,7 +137,7 @@ symbol_level = 0
 target_os = "chromeos"
 use_goma = true
 </code></pre></div></div>
-<p><code class="language-plaintext highlighter-rouge">also_build_ash_chrome = true</code> tells a ninja to build Ash-Chrome(wayland server) along with LaCrOS Browser(wayland client)</p>
+<p><code class="language-plaintext highlighter-rouge">also_build_ash_chrome = true</code> tells a <a href="https://chromium.googlesource.com/chromium/src.git/+/56.0.2924.56/docs/ninja_build.md">ninja</a> to build Ash-Chrome(wayland server) along with LaCrOS Browser(wayland client)</p>
 
 <ul>
   <li>
@@ -145,7 +145,7 @@ use_goma = true
     <p>To build the code run the below command from your chromium source directory.</p>
     <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>chromium/src$autoninja -C out/linux-lacros-rel/ chrome all -j500
 </code></pre></div>    </div>
-    <p>Ash-Chrome is located at location <code class="language-plaintext highlighter-rouge">out/linux-lacros-rel/ash_clang_x64/test_ash_chrome</code> and LaCrOS Browser is located at location <code class="language-plaintext highlighter-rouge">out/linux-lacros-rel/chrome</code> after build</p>
+    <p>After build, Ash-Chrome is located at location <code class="language-plaintext highlighter-rouge">out/linux-lacros-rel/ash_clang_x64/test_ash_chrome</code> and LaCrOS Browser is located at location <code class="language-plaintext highlighter-rouge">out/linux-lacros-rel/chrome</code>.</p>
   </li>
   <li>
     <h3 id="run">Run</h3>
@@ -218,13 +218,8 @@ See the working of the Multi-Desk in LaCrOS in the video below.</li>
 
 <ul>
   <li>WebUi Tab Strip
-This feature adds a new tab bar to the browser, featuring page thumbnail previews and a touch friendly UI. My colleague <a href="mailto:tonikitoo@igalia.com">Antonio</a> has contributed to an implementation of this feature.
-See the working of the WebUi Tab Strip in LaCrOS in the video below.</li>
+This feature adds a new tab bar to the browser, featuring page thumbnail previews and a touch friendly UI. My colleague <a href="mailto:tonikitoo@igalia.com">Antonio</a> has contributed to an implementation of this feature.</li>
 </ul>
-
-<figure class="video_container">
-  <iframe src="&lt;update-link-here&gt;" frameborder="0" allowfullscreen="true"> </iframe>
-</figure>
 
 <p>Last but not least, our Chromium team is also working in parallel on fixing several window manager integration issues as part of this work, so please stay tuned for more updates on our efforts related to LaCrOS development :)</p>
 
