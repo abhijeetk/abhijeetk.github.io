@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Up and running webassembly in browser – Abhijeet Kandalkar – Software Engineer @ Igalia | C++ developer | Open Source contributor in Webkit/Chromium</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+
+    
+    <meta name="description" content="ASM to WebAssembly
+" />
+    <meta property="og:description" content="ASM to WebAssembly
+" />
+    
+    <meta name="author" content="Abhijeet Kandalkar" />
+
+    
+    <meta property="og:title" content="Up and running webassembly in browser" />
+    <meta property="twitter:title" content="Up and running webassembly in browser" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Abhijeet Kandalkar - Software Engineer @ Igalia | C++ developer | Open Source contributor in Webkit/Chromium" href="/feed.xml" />
+
+    <!-- Created with Jekyll Now - http://github.com/barryclark/jekyll-now -->
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="/images/me.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Abhijeet Kandalkar</a></h1>
+            <p class="site-description">Software Engineer @ Igalia | C++ developer | Open Source contributor in Webkit/Chromium</p>
+          </div>
+
+          <nav>
+            <a href="/os">OpenSource</a>
+            <a href="/">CV</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <div id="main" role="main" class="container">
+      <article class="post">
+  <h1>Up and running webassembly in browser</h1>
+
+  <div class="entry">
+    <h2 id="asm-to-webassembly">ASM to WebAssembly</h2>
+
+<ul>
+  <li>
+    <h3 id="prerequisite">Prerequisite</h3>
+  </li>
+</ul>
+
+<ol>
+  <li>Visual Studio 2015</li>
+  <li>cmake</li>
+</ol>
+
+<ul>
+  <li>
+    <h3 id="clone-binaryentranscompiler-for-wasm">Clone binaryen(transcompiler for wasm)</h3>
+  </li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">mkdir </span>wasmdemo
+<span class="nb">cd </span>wasmdemo
+git clone https://github.com/WebAssembly/binaryen.git
+<span class="nb">cd </span>binaryen
+</code></pre></div></div>
+
+<ul>
+  <li>
+    <h3 id="build-code">Build code</h3>
+  </li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>wasmdemo<span class="se">\b</span>inaryen&gt;cmake <span class="nb">.</span>
+wasmdemo<span class="se">\b</span>inaryen&gt;cmake <span class="nt">--build</span> <span class="nb">.</span> <span class="nt">--config</span> Release
+</code></pre></div></div>
+
+<p><img src="/images/Up-and-running-webassembly/binaryenBuild.png" alt="alt text" title="Up and running webassembly in browser" /></p>
+
+<ul>
+  <li>
+    <h3 id="utilities-gets-generated-after-build-in-binaryenbin">Utilities gets generated after build in binaryen/bin</h3>
+  </li>
+</ul>
+
+<p><img src="/images/Up-and-running-webassembly/Utilities.png" alt="alt text" title="Up and running webassembly in browser" /></p>
+
+<ul>
+  <li>
+    <h3 id="create-hello_worldasmjs-file-with-content-below">Create hello_world.asm.js file with content below</h3>
+  </li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">function </span>MyMathModule<span class="o">(</span>global<span class="o">)</span> <span class="o">{</span>
+    <span class="s2">"use asm"</span><span class="p">;</span>
+    var exp <span class="o">=</span> global.Math.exp<span class="p">;</span>
+    <span class="k">function </span>doubleExp<span class="o">(</span>value<span class="o">)</span> <span class="o">{</span>
+        value <span class="o">=</span> +value<span class="p">;</span>
+        <span class="k">return</span> +<span class="o">(</span>+exp<span class="o">(</span>+value<span class="o">)</span> <span class="k">*</span> 2.0<span class="o">)</span><span class="p">;</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="o">{</span> doubleExp: doubleExp <span class="o">}</span><span class="p">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p><img src="/images/Up-and-running-webassembly/asm2wasm.png" alt="alt text" title="Up and running webassembly in browser" /></p>
+
+<ul>
+  <li>
+    <h3 id="wasm-asexe-is-a-wasm-assembler-which-converts-intermediate-ast-to-wasm-binary">wasm-as.exe is a wasm assembler which converts intermediate AST to wasm binary</h3>
+  </li>
+</ul>
+
+<div class="language-diff highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">wasmdemo\binaryen\bin&gt;wasm-as.exe hello_world.wast -o hello_world.wasm
+</span></code></pre></div></div>
+
+<p><img src="/images/Up-and-running-webassembly/wasm-as.png" alt="alt text" title="Up and running webassembly in browser" /></p>
+
+<h2 id="running-webassembly-in-browser">Running WebAssembly in Browser</h2>
+
+<ul>
+  <li>
+    <p>We need to access WebAssembly on the Web is through an explicit JS API.
+Refer <a href="https://github.com/WebAssembly/design/blob/master/JS.md">https://github.com/WebAssembly/design/blob/master/JS.md</a> for more information.</p>
+  </li>
+  <li>
+    <p>Create file <em>index.html</em> with content below :</p>
+  </li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;script&gt;
+fetch<span class="o">(</span><span class="s2">"hello_world.wasm"</span><span class="o">)</span>
+.then<span class="o">(</span><span class="k">function</span><span class="o">(</span>response<span class="o">)</span> <span class="o">{</span>
+<span class="k">return </span>response.arrayBuffer<span class="o">()</span><span class="p">;</span>
+<span class="o">})</span>
+.then<span class="o">(</span><span class="k">function</span><span class="o">(</span>buffer<span class="o">)</span> <span class="o">{</span>
+var dependencies <span class="o">=</span> <span class="o">{</span>
+<span class="s2">"global"</span>: <span class="o">{}</span>,
+<span class="s2">"env"</span>: <span class="o">{}</span>
+<span class="o">}</span><span class="p">;</span>
+dependencies[<span class="s2">"global.Math"</span><span class="o">]</span> <span class="o">=</span> window.Math<span class="p">;</span>
+var moduleBufferView <span class="o">=</span> new Uint8Array<span class="o">(</span>buffer<span class="o">)</span><span class="p">;</span>
+var myMathModule <span class="o">=</span> Wasm.instantiateModule<span class="o">(</span>moduleBufferView, dependencies<span class="o">)</span><span class="p">;</span>
+console.log<span class="o">(</span>myMathModule.exports.doubleExp<span class="o">)</span><span class="p">;</span>
+<span class="k">for</span><span class="o">(</span>var i <span class="o">=</span> 0<span class="p">;</span> i &lt; 5<span class="p">;</span> i++<span class="o">)</span> <span class="o">{</span>
+console.log<span class="o">(</span>myMathModule.exports.doubleExp<span class="o">(</span>i<span class="o">))</span><span class="p">;</span>
+<span class="o">}</span>
+<span class="o">})</span><span class="p">;</span>
+&lt;/script&gt;
+</code></pre></div></div>
+
+<p><img src="/images/Up-and-running-webassembly/server_content.png" alt="alt text" title="Up and running webassembly in browser" /></p>
+
+<ul>
+  <li>Run code through local server and open file in <strong>Chrome Canary</strong> web browser.</li>
+</ul>
+
+<p><em>Other browsers might give an error as binaryen version used to build wasm file and binaryen version inside browser is different.</em></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>TypeError: wasm validation error at offset 8: failed to match binary version
+</code></pre></div></div>
+
+<ul>
+  <li>
+    <h3 id="output">Output</h3>
+  </li>
+</ul>
+
+<p><img src="/images/Up-and-running-webassembly/output.png" alt="alt text" title="Up and running webassembly in browser" /></p>
+
+<ul>
+  <li>
+    <h3 id="references">References</h3>
+  </li>
+</ul>
+
+<p><a href="http://cultureofdevelopment.com/blog/build-your-first-thing-with-web-assembly/">http://cultureofdevelopment.com/blog/build-your-first-thing-with-web-assembly/</a>
+<a href="https://github.com/WebAssembly/design/blob/master/JS.md">https://github.com/WebAssembly/design/blob/master/JS.md</a>
+<a href="https://github.com/brakmic/brakmic/blob/master/webassembly/COMPILING_WIN32.md">https://github.com/brakmic/brakmic/blob/master/webassembly/COMPILING_WIN32.md</a></p>
+
+  </div>
+
+  <div class="date">
+    Written on October 10, 2016
+  </div>
+
+  
+</article>
+
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+
+
+
+<a href="https://github.com/abhijeetk"><i class="svg-icon github"></i></a>
+
+<a href="https://www.linkedin.com/in/abhijeetkandalkar"><i class="svg-icon linkedin"></i></a>
+
+
+<a href="https://www.twitter.com/Abhijeet58"><i class="svg-icon twitter"></i></a>
+
+
+
+        </footer>
+      </div>
+    </div>
+
+    
+
+  </body>
+</html>

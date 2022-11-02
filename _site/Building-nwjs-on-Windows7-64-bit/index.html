@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Building nwjs on Windows7 64 bit – Abhijeet Kandalkar – Software Engineer @ Igalia | C++ developer | Open Source contributor in Webkit/Chromium</title>
+
+        <meta charset="utf-8" />
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+
+    
+    <meta name="description" content="##Install depot_tools : ##
+
+  Download code
+
+" />
+    <meta property="og:description" content="##Install depot_tools : ##
+
+  Download code
+
+" />
+    
+    <meta name="author" content="Abhijeet Kandalkar" />
+
+    
+    <meta property="og:title" content="Building nwjs on Windows7 64 bit" />
+    <meta property="twitter:title" content="Building nwjs on Windows7 64 bit" />
+    
+
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="Abhijeet Kandalkar - Software Engineer @ Igalia | C++ developer | Open Source contributor in Webkit/Chromium" href="/feed.xml" />
+
+    <!-- Created with Jekyll Now - http://github.com/barryclark/jekyll-now -->
+  </head>
+
+  <body>
+    <div class="wrapper-masthead">
+      <div class="container">
+        <header class="masthead clearfix">
+          <a href="/" class="site-avatar"><img src="/images/me.jpg" /></a>
+
+          <div class="site-info">
+            <h1 class="site-name"><a href="/">Abhijeet Kandalkar</a></h1>
+            <p class="site-description">Software Engineer @ Igalia | C++ developer | Open Source contributor in Webkit/Chromium</p>
+          </div>
+
+          <nav>
+            <a href="/os">OpenSource</a>
+            <a href="/">CV</a>
+            <a href="/about">About</a>
+          </nav>
+        </header>
+      </div>
+    </div>
+
+    <div id="main" role="main" class="container">
+      <article class="post">
+  <h1>Building nwjs on Windows7 64 bit</h1>
+
+  <div class="entry">
+    <p>##Install depot_tools : ##</p>
+<ul>
+  <li>Download code</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+</code></pre></div></div>
+
+<ul>
+  <li>Add depot_tools to your PATH:</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ export PATH=$PATH:~/depot_tools (MAC/Linux)
+</code></pre></div></div>
+
+<p>On Windows, add depot_tools to PATH enviorment variable.</p>
+
+<p>##Get nwjs source code : ##</p>
+<ul>
+  <li>Create source directory and download configuration .gclient file.</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    node-webkit
+    cd node-webkit
+    touch .gclient
+    vi .gclient
+</code></pre></div></div>
+<ul>
+  <li>Now edit the file .gclient, and paste this into it:</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    solutions = [
+       { "name"        : "src",
+         "url"         : "https://github.com/nwjs/chromium.src.git@origin/nw12",
+         "deps_file"   : "DEPS",
+         "managed"     : True,
+       
+         "custom_deps" : {
+           "src/third_party/WebKit/LayoutTests": None,
+           "src/chrome_frame/tools/test/reference_build/chrome": None,
+           "src/chrome_frame/tools/test/reference_build/chrome_win": None,
+           "src/chrome/tools/test/reference_build/chrome": None,
+           "src/chrome/tools/test/reference_build/chrome_linux": None,
+           "src/chrome/tools/test/reference_build/chrome_mac": None,
+           "src/chrome/tools/test/reference_build/chrome_win": None,
+         },
+         "safesync_url": "",
+       },
+    ]
+</code></pre></div></div>
+
+<ul>
+  <li>Environment variables</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    DEPOT_TOOLS_WIN_TOOLCHAIN=0 
+    DXSDK_DIR=C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\  
+    GYP_GENERATOR=ninja,msvs
+    GYP_GENERATORS=ninja
+    GYP_DEFINES=nwjs_sdk=1 disable_nacl=0 proprietary_codecs=1
+    GYP_MSVS_VERSION=2013
+</code></pre></div></div>
+
+<p>Add machine architecture information:
+For 64 bit OS :</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    $GYP_DEFINES=host_arch=x64 target_arch=x64 
+</code></pre></div></div>
+
+<p>##Sync Code##</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    $node-webkit&gt;gclient sync
+</code></pre></div></div>
+
+<p>##Build##</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    $ninja -C out/Release_x64 nw -j16
+</code></pre></div></div>
+
+<p>##Clean code##</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    $ninja -C out/Release_x64 -t clean
+</code></pre></div></div>
+
+  </div>
+
+  <div class="date">
+    Written on February  7, 2016
+  </div>
+
+  
+</article>
+
+    </div>
+
+    <div class="wrapper-footer">
+      <div class="container">
+        <footer class="footer">
+          
+
+
+
+<a href="https://github.com/abhijeetk"><i class="svg-icon github"></i></a>
+
+<a href="https://www.linkedin.com/in/abhijeetkandalkar"><i class="svg-icon linkedin"></i></a>
+
+
+<a href="https://www.twitter.com/Abhijeet58"><i class="svg-icon twitter"></i></a>
+
+
+
+        </footer>
+      </div>
+    </div>
+
+    
+
+  </body>
+</html>
