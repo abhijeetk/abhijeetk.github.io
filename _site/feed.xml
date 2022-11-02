@@ -1,832 +1,1186 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom"><generator uri="http://jekyllrb.com" version="3.1.0">Jekyll</generator><link href="http://abhijeetk.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="http://abhijeetk.github.io/" rel="alternate" type="text/html" /><updated>2016-12-11T00:49:26+05:30</updated><id>http://abhijeetk.github.io/</id><title>Abhijeet Kandalkar</title><subtitle>C++ developer and Open Source contributor in Webkit/Chromium.</subtitle><entry><title>Up and running WebChimera with nwjs Ubuntu</title><link href="http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-ubuntu/" rel="alternate" type="text/html" title="Up and running WebChimera with nwjs Ubuntu" /><published>2016-11-11T00:00:00+05:30</published><updated>2016-11-11T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-ubuntu</id><content type="html" xml:base="http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-ubuntu/">&lt;ul&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;add-proxy-to-bashrc&quot;&gt;Add proxy to ~/.bashrc&lt;/h3&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.1">Jekyll</generator><link href="http://abhijeetk.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="http://abhijeetk.github.io/" rel="alternate" type="text/html" /><updated>2022-11-02T20:37:33+05:30</updated><id>http://abhijeetk.github.io/feed.xml</id><title type="html">Abhijeet Kandalkar</title><subtitle>Software Engineer @ Igalia | C++ developer | Open Source contributor in Webkit/Chromium</subtitle><entry><title type="html">Improving disk read performance</title><link href="http://abhijeetk.github.io/improving-disk-read-performance/" rel="alternate" type="text/html" title="Improving disk read performance" /><published>2022-11-02T00:00:00+05:30</published><updated>2022-11-02T00:00:00+05:30</updated><id>http://abhijeetk.github.io/improving-disk-read-performance</id><content type="html" xml:base="http://abhijeetk.github.io/improving-disk-read-performance/"><![CDATA[<p>When I started working on analyzing the startup time of a browser, I didn’t have an idea where to start. For me, Performance was a number game and trial-n-error approach. The challenge I was looking into is described in bug <a href="https://bugs.chromium.org/p/chromium/issues/detail?id=1270977">1270977</a>, in which the chrome binary hosted on two different partitions behaved differently.</p>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;http_proxy&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;http://&amp;lt;user&amp;gt;:&amp;lt;password&amp;gt;@&amp;lt;ip&amp;gt;:&amp;lt;port&amp;gt;&quot;&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;https_proxy&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;http://&amp;lt;user&amp;gt;:&amp;lt;password&amp;gt;@&amp;lt;ip&amp;gt;:&amp;lt;port&amp;gt;&quot;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<table>
+  <thead>
+    <tr>
+      <th>BROWSER</th>
+      <th>LaCrOS</th>
+      <th>Mount point</th>
+      <th>Partition</th>
+      <th>fs type</th>
+      <th>comment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>B1</td>
+      <td>stateful</td>
+      <td>/run/imageloader/lacros-*/chrome</td>
+      <td>stateful</td>
+      <td>squashfs</td>
+      <td>downloaded</td>
+    </tr>
+    <tr>
+      <td>B2</td>
+      <td>deployedLacros</td>
+      <td>/usr/local/lacros-chrome</td>
+      <td>stateful</td>
+      <td>ext4</td>
+      <td>pushed by developer</td>
+    </tr>
+  </tbody>
+</table>
 
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;add-proxy-to-packaging-system&quot;&gt;Add proxy to packaging system&lt;/h3&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<p>You can learn more about LaCrOS in my previous <a href="https://abhijeetk.github.io/What-is-LaCrOS/">blog</a>.
+From the above table, the difference in filesystem was the first suspect. Squashfs is a compressed read-only file system for Linux.</p>
 
-&lt;p&gt;If &lt;strong&gt;sudo apt-get update&lt;/strong&gt; is not working, add below line to &lt;strong&gt;&lt;em&gt;/etc/apt/apt.conf&lt;/em&gt;&lt;/strong&gt;.&lt;/p&gt;
+<p>To emulate the first launch, all caches are cleared using drop_caches as below.
+<code class="language-plaintext highlighter-rouge">echo 3 &gt; /proc/sys/vm/drop_caches</code></p>
 
-&lt;p&gt;Create /etc/apt/apt.conf if it doesn’t exist and add line below&lt;/p&gt;
+<h4 id="how-to-measure-a-file-system-read-time">How to measure a file system read time?</h4>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Acquire::http::Proxy &lt;span class=&quot;s2&quot;&gt;&quot;http://&amp;lt;user&amp;gt;:&amp;lt;password&amp;gt;@43.88.64.10:8080&quot;&lt;/span&gt;;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<p>For investigation and testing/benchmarking,  sequential read requests are emulated using a <code class="language-plaintext highlighter-rouge">dd</code> command and random read requests are emulated using <code class="language-plaintext highlighter-rouge">fio</code>(Flexible IO Tester)</p>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo gedit /etc/apt/apt.conf
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<p>For sequential read, B1 took around <strong>92MB/s</strong> while B2 took <strong>242MB/s</strong>.(Higher read speed means faster). Its a huge difference. <code class="language-plaintext highlighter-rouge">ext4</code> is faster than <code class="language-plaintext highlighter-rouge">squashfs</code>.</p>
 
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;install-buil-dependencies&quot;&gt;Install buil dependencies&lt;/h3&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>localhost ~ # echo 3 &gt; /proc/sys/vm/drop_caches
+localhost ~ # time dd
+if=/run/imageloader/lacros-dogfood-dev/99.0.4824.0/chrome of=/dev/null bs=4096
+43910+1 records in
+43910+1 records out
+179859368 bytes (180 MB, 172 MiB) copied, 1.93517 s, 92.9 MB/s
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo apt-get update
-sudo apt-get install build-essential cmake libvlc-dev
-sudo apt-get install vlc
-sudo apt-get install git
-sudo apt-get install npm 
-npm -v
-npm config &lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;proxy &lt;span class=&quot;s2&quot;&gt;&quot;http://&amp;lt;userid&amp;gt;:&amp;lt;passwd&amp;gt;@43.88.64.10:8080&quot;&lt;/span&gt;
-npm config &lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;https-proxy &lt;span class=&quot;s2&quot;&gt;&quot;http://&amp;lt;userid&amp;gt;:&amp;lt;passwd&amp;gt;@43.88.64.10:8080&quot;&lt;/span&gt;
-sudo npm install -g npm@latest
-npm -v
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+real    0m1.951s
+user    0m0.020s
+sys 0m0.637s
+</code></pre></div></div>
 
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;clone-code-and-build-it&quot;&gt;Clone code and build it&lt;/h3&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>localhost ~ # echo 3 &gt; /proc/sys/vm/drop_caches
+localhost ~ # time dd if=/usr/local/lacros-chrome/chrome of=/dev/null bs=4096
+43910+1 records in
+43910+1 records out
+179859368 bytes (180 MB, 172 MiB) copied, 0.744337 s, 242 MB/s
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;mkdir work
-&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;work/
-git clone https://github.com/RSATom/wcjs-ugly-demo.git
-&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;wcjs-ugly-demo/
-./build_nwjs.sh 
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+real    0m0.767s
+user    0m0.056s
+sys 0m0.285s
 
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;run&quot;&gt;Run&lt;/h3&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+</code></pre></div></div>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;wget http://dl.nwjs.io/v0.12.0/nwjs-v0.12.0-linux-x64.tar.gz
-tar -xvzf nwjs-v0.12.0-linux-x64.tar.gz 
-export PATH=/home/abhijeet/work/wcjs-ugly-demo/nwjs-v0.12.0-linux-x64:&quot;$PATH&quot;
-gedit index.html (Edit it to add http or https URL for video)
-./run_nwjs.sh
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<p>As Squashfs is a compressed file system, it first uncompresses the data and then performs a read. So definitely it’s going to be slower than ext4 but the difference(242 -92) was huge and unacceptable.</p>
 
-&lt;p&gt;&lt;img src=&quot;/images/Up-and-running-WebChimera-with-nwjs-ubuntu/WebChimera.png&quot; alt=&quot;alt text&quot; title=&quot;Up and running WebChimera with nwjs Ubuntu&quot; /&gt;&lt;/p&gt;</content><summary>Add proxy to ~/.bashrc</summary></entry><entry><title>Up and running WebChimera with nwjs</title><link href="http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-Win/" rel="alternate" type="text/html" title="Up and running WebChimera with nwjs" /><published>2016-11-11T00:00:00+05:30</published><updated>2016-11-11T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-Win</id><content type="html" xml:base="http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-Win/">&lt;ul&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;add-proxy-to-windows-environment&quot;&gt;Add proxy to windows environment&lt;/h3&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<h4 id="can-we-do-better">Can we do better?</h4>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;http_proxy&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;http://&amp;lt;user&amp;gt;:&amp;lt;password&amp;gt;@&amp;lt;ip&amp;gt;:&amp;lt;port&amp;gt;&quot;&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;https_proxy&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;http://&amp;lt;user&amp;gt;:&amp;lt;password&amp;gt;@&amp;lt;ip&amp;gt;:&amp;lt;port&amp;gt;&quot;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<p>The next step was to find some tools that could provide more information.</p>
 
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;install-build-dependencies-for-webchimera&quot;&gt;Install build dependencies for WebChimera&lt;/h3&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li>strace -  Linux utility to find out system calls that take more time or have blocking IO. But couldn’t get much information out of this analysis.</li>
+  <li><a href="https://man7.org/linux/man-pages/man1/iostat.1.html">iostat</a> - This provides more insight information for input/output</li>
+</ul>
 
-&lt;p&gt;Refer link : &lt;a href=&quot;https://github.com/RSATom/WebChimera.js#windows&quot;&gt;https://github.com/RSATom/WebChimera.js#windows&lt;/a&gt;&lt;/p&gt;
+<p><code class="language-plaintext highlighter-rouge">$echo 3 &gt; /proc/sys/vm/drop_caches &amp;&amp; iostat -d -tc -xm 1 20</code></p>
 
-&lt;ol&gt;
-  &lt;li&gt;Visual Studio Community 2013/2015 - (I tried with VS2015)&lt;/li&gt;
-  &lt;li&gt;Install VLC Player 32 bit and add it to PATH environment variable (Used to build webchimera)&lt;/li&gt;
-  &lt;li&gt;CMake - cmake-3.6.0-rc2-win64-x64.msi&lt;/li&gt;
-  &lt;li&gt;Node.js&lt;/li&gt;
-  &lt;li&gt;Install &lt;strong&gt;NW.js ia32&lt;/strong&gt; add it to PATH environment variable (Used to run player)&lt;/li&gt;
-&lt;/ol&gt;
+<p>After running this command for both B1 and B2, it appears that B1 is not merging read requests. In other words, rrqm/s and %rrqm values are ZERO. Refer <a href="https://man7.org/linux/man-pages/man1/iostat.1.html">man-iostat</a></p>
 
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;add-proxy-to-npm-packaging-system&quot;&gt;Add proxy to npm packaging system&lt;/h3&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<blockquote>
+  <p>%rrqm  The percentage of read requests merged together
+before being sent to the device.</p>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;npm config &lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;proxy http://&amp;lt;user&amp;gt;:&amp;lt;password&amp;gt;@&amp;lt;ip&amp;gt;:&amp;lt;port&amp;gt; 
-npm config &lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;https-proxy http://&amp;lt;user&amp;gt;:&amp;lt;password&amp;gt;@&amp;lt;ip&amp;gt;:&amp;lt;port&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+  <p>rrqm/s The number of read requests merged per second that
+were queued to the device.</p>
+</blockquote>
 
-&lt;p&gt;Check npm configuration in &lt;strong&gt;C:\Users&amp;lt;user&amp;gt;.npmrc&lt;/strong&gt;&lt;/p&gt;
+<p>The data to be read is scattered in different sectors of a different block. As a result of scattering, the read requests were not merged, so there could be a lot of read requests down to the block device.</p>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;https-proxy&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;http://&amp;lt;user&amp;gt;:&amp;lt;password&amp;gt;@43.88.64.10:8080/
-&lt;span class=&quot;nv&quot;&gt;proxy&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;http://&amp;lt;user&amp;gt;:&amp;lt;password&amp;gt;@43.88.64.10:8080/
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<p>Next step was to find out who is responsible for merging read requests.</p>
 
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;check-cmake-generators&quot;&gt;Check cmake generators&lt;/h3&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<h4 id="io-scheduler">IO scheduler</h4>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;cmake --help
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<p><a href="https://wiki.ubuntu.com/Kernel/Reference/IOSchedulers">IO scheduler</a> optimizes disk access requests by merging I/O requests to similar locations on disk.
+To get the current IO scheduler for a disk-device</p>
 
-&lt;p&gt;&lt;img src=&quot;/images/Up-and-running-WebChimera-with-nwjs-win/cmake.png&quot; alt=&quot;alt text&quot; title=&quot;Up and running WebChimera with nwjs&quot; /&gt;&lt;/p&gt;
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$/sys/block/&lt;disk device&gt;/queue/scheduler
+</code></pre></div></div>
 
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;clone-code-and-build-it&quot;&gt;Clone code and build it&lt;/h3&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<p>for B1,</p>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;git clone https://github.com/RSATom/wcjs-ugly-demo.git
-&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;wcjs-ugly-demo/
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>localhost ~ # cat /sys/block/dm-1/queue/scheduler 
+none
+</code></pre></div></div>
+
+<p>For B2, it uses the bfq scheduler</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>localhost ~ # cat /sys/block/mmcblk0/queue/scheduler 
+mq-deadline kyber [bfq] none
+</code></pre></div></div>
+
+<p>As you can notice, B1 does not have scheduler. For B2, scheduler is <a href="https://docs.kernel.org/block/bfq-iosched.html">bfq</a>(Budget Fair Queueing).</p>
+
+<p><a href="https://documentation.suse.com/sles/15-SP3/html/SLES-all/cha-tuning-io.html">SUSE</a> and <a href="https://www.ibm.com/docs/en/linux-on-systems?topic=linuxonibm/performance/tuneforsybase/ioschedulers.htm">IBM</a> has good documentation about IO scheduling.</p>
+
+<p>It has been found so far that there are differences between file systems, read request merge patterns, and IO schedulers. But there is one more difference which we havent noticed yet.</p>
+
+<p>If you look at how B1 is mounted, you will see that we are using a virtual device.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>localhost ~ # df -TH
+Filesystem  Type      Size  Used  Avail  Use%  Mounted on
+/dev/dm-1   squashfs  143M  143M      0  100%  /run/imageloader/lacros-dogfood-dev/99.0.4824.0
+</code></pre></div></div>
+
+<h4 id="a-twist-in-my-story">A twist in my story</h4>
+
+<p>For B1, we are not directly communicating with the block device instead the requests are going through a virtual device using a device mapper.
+As you might have noticed above, <code class="language-plaintext highlighter-rouge">dm-1</code> device mapper virtual device is used by B1.</p>
+
+<p>Read more about a device-mapper and refer to the diagram on <a href="https://en.wikipedia.org/wiki/Device_mapper">wikipedia</a> page.</p>
+
+<p>We are using a dm-verity as a virtual device.</p>
+<blockquote>
+  <p>Device-Mapper’s “verity” target provides transparent integrity checking of block devices using a cryptographic digest provided by the kernel crypto API. This target is read-only.</p>
+</blockquote>
+
+<p>From a security point of view, it makes sense to host your executable binary to a read-only files system that provides integrity checking.</p>
+
+<p>There is a twist in that dm-verity does not have a scheduler, and scheduling is delegated to the scheduler of the underlying block device. The I/O will not be merged at the device-mapper layer, but at an underlying layer.</p>
+
+<p><img src="https://notes.igalia.com/uploads/e41f5131-bb6a-4fe8-9b01-1082efdcbd9c.png" alt="" /></p>
+
+<p>Several layers are different between B1 and B2, including partition encryption(dm-verity) and compression(squashfs).</p>
+
+<p>In addition, we found that B1 defaults to using <code class="language-plaintext highlighter-rouge">--direct-io</code></p>
+
+<h3 id="what-is-direct-io-">What is DIRECT IO ?</h3>
+
+<p>Direct I/O is a feature of the <em>file system</em> whereby file reads and writes go directly from the applications to the storage device, bypassing the operating system read and write caches.</p>
+
+<p>Although direct I/O can reduce CPU usage, using it typically results in the process taking longer to complete, <strong>especially for relatively <em>small</em> requests</strong>. This penalty is caused by the fundamental differences between normal cached I/O and direct I/O.</p>
+
+<p>Every direct I/O read causes a synchronous read from the disk; unlike the normal cached I/O policy where the read may be satisfied from the cache. This can result in very <em>poor</em> performance if the data was likely to be in memory under the normal caching policy.</p>
+
+<h3 id="is-it-possible-to-control-how-many-read-requests-are-made">Is it possible to control how many read requests are made?</h3>
+
+<p>We decided to go deeper and analyze the block layer. In the block layer the request queue is handled, and I/O scheduling is done. To see how the flow of IO goes through the block layer, there is a suit of tools consisting of</p>
+
+<ul>
+  <li>blktrace (tracing the IO requests through the block layer),</li>
+  <li>blkparse (parsing the output of blktrace to make it human readable),</li>
+  <li>btrace (script to combine blktrace and blkparse, and</li>
+  <li><a href="https://usermanual.wiki/Document/bttmanual.1495776143/view">btt</a> (a blktrace output post-processing tool)), among others.</li>
+</ul>
+
+<p>Below is the result of block-level parsing.</p>
+
+<p>For B1,</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>ALL</th>
+      <th>MIN</th>
+      <th>AVG</th>
+      <th>MAX</th>
+      <th>N</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Q2Q</td>
+      <td>0.000000001</td>
+      <td>0.000069861</td>
+      <td>0.004097547</td>
+      <td>94883</td>
+    </tr>
+    <tr>
+      <td>Q2G</td>
+      <td>0.000000242</td>
+      <td>0.000000543</td>
+      <td>0.000132620</td>
+      <td>94884</td>
+    </tr>
+    <tr>
+      <td>G2I</td>
+      <td>0.000000613</td>
+      <td>0.000001455</td>
+      <td>0.003585980</td>
+      <td>94884</td>
+    </tr>
+    <tr>
+      <td>I2D</td>
+      <td>0.000001399</td>
+      <td>0.000002456</td>
+      <td>0.003777911</td>
+      <td>94884</td>
+    </tr>
+    <tr>
+      <td>D2C</td>
+      <td>0.000133042</td>
+      <td>0.000176883</td>
+      <td>0.001771526</td>
+      <td>23721</td>
+    </tr>
+    <tr>
+      <td>Q2C</td>
+      <td>0.000136308</td>
+      <td>0.000181337</td>
+      <td>0.003968613</td>
+      <td>23721</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>For B2,</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>ALL</th>
+      <th>MIN</th>
+      <th>AVG</th>
+      <th>MAX</th>
+      <th>N</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Q2Q</td>
+      <td>0.000000001</td>
+      <td>0.000016582</td>
+      <td>0.003283451</td>
+      <td>76171</td>
+    </tr>
+    <tr>
+      <td>Q2G</td>
+      <td>0.000000178</td>
+      <td>0.000000228</td>
+      <td>0.000016893</td>
+      <td>76172</td>
+    </tr>
+    <tr>
+      <td>G2I</td>
+      <td>0.000000626</td>
+      <td>0.000005904</td>
+      <td>0.000587304</td>
+      <td>76172</td>
+    </tr>
+    <tr>
+      <td>I2D</td>
+      <td>0.000002011</td>
+      <td>0.000007582</td>
+      <td>0.000861783</td>
+      <td>76172</td>
+    </tr>
+    <tr>
+      <td>D2C</td>
+      <td>0.000004959</td>
+      <td>0.000067955</td>
+      <td>0.001275667</td>
+      <td>19043</td>
+    </tr>
+    <tr>
+      <td>Q2C</td>
+      <td>0.000009132</td>
+      <td>0.000081670</td>
+      <td>0.001315828</td>
+      <td>19043</td>
+    </tr>
+  </tbody>
+</table>
+
+<ul>
+  <li>Number of read requests(N) are more for B1 than B2.
+    <ul>
+      <li>For B1, N = 94883 (partition with <code class="language-plaintext highlighter-rouge">squashfs + dm-verity</code>)</li>
+      <li>For B2, N = 76171 (ext4 partition)</li>
+    </ul>
+  </li>
+  <li>Average <a href="https://github.com/efarrer/blktrace/blob/d1927de948d47a85caf396b327b30a19ca711990/btt/doc/btt.tex#L144">D2C</a> time for B1 is more than twice that of B2 <code class="language-plaintext highlighter-rouge">(0.000176883 &gt; 2*0.000067955)</code>.</li>
+</ul>
+
+<p>D2C time: the average time from when the actual IO was issued to the driver until is completed (completion trace) back to the block IO layer.</p>
+
+<p><code class="language-plaintext highlighter-rouge">--d2c-latencies</code> option: This option instructs <code class="language-plaintext highlighter-rouge">btt</code> to generate the D2C latency ﬁle. This file has the ﬁrst column (X values) representing runtime (seconds), while the second column (Y values) shows the actual latency for command at that time (either Q2D, D2C or Q2C).
+<img src="https://notes.igalia.com/uploads/7eeac300-8cc6-4bd6-8b9d-295474469357.png" alt="" /></p>
+
+<h3 id="fioflexible-io-tester">FIO(Flexible IO Tester)</h3>
+
+<p>Up until now, all analysis has been performed using a <code class="language-plaintext highlighter-rouge">dd</code> which emulate sequential read requests.</p>
+
+<p>Read access pattern also affects a IO performace so to emulated a random IO workloads tools like FIO is useful.</p>
+
+<p>When you specify a <code class="language-plaintext highlighter-rouge">--size</code>, FIO creates a file with <code class="language-plaintext highlighter-rouge">filename</code> and when you don’ specify it FIO reads form a <code class="language-plaintext highlighter-rouge">filename</code>.</p>
+
+<p>We are testing an existing chrome binary without providing its size.</p>
+
+<p><code class="language-plaintext highlighter-rouge">localhost~# fio --name=4k_read --ioengine=libaio --iodepth=1 --rw=randread --bs=4k --norandommap --filename=&lt;dir&gt;/chrome</code></p>
+
+<h3 id="hotspots">Hotspots</h3>
+
+<p>A “hotspot” is a place where the app is spending a lot of time. After performing above analysis,  find those areas and speed them up. This is easily done using a profiling tool like
+It has been found so far that there are differences between file systems, read request merge patterns, and IO schedulers. But there one more difference which we havent noticed yet.</p>
+
+<p>For optimal performance,</p>
+
+<ul>
+  <li>reduce the number of requests (N)
+    <ul>
+      <li>by tuning the <em>blocksize</em> of the filesystem(squashfs) of the partition</li>
+    </ul>
+  </li>
+  <li>reduce the time taken to process each request(D2C)
+    <ul>
+      <li>by tuning a compression algorithm used by squashfs filesystem</li>
+      <li>by tuning a hashing function used by dm-verity</li>
+    </ul>
+  </li>
+</ul>
+
+<h4 id="tuning-a-blocksize">Tuning a blocksize</h4>
+
+<p>Block is a continuous location on the hard drive where data is stored. In general, FileSystem stores data as a collection of blocks. When the block size is small, the data gets divided into blocks and distributed in more blocks. As more blocks are created, there will be more number of read requests.</p>
+
+<p>Squashfs compresses files, inodes, and directories, and supports block sizes from 4 KiB up to 1 MiB for greater compression.</p>
+
+<p>We experimented with different block sizes of 4K, 64K, 128K, 256K. As the block size is increasing, the read speed for DD is increasing. We have chosen 128K.</p>
+
+<p><code class="language-plaintext highlighter-rouge">mksquashfs /tmp/squashfs-root /home/chronos/cros-components/lacros-dogfood-dev/100.0.4881.0/image.squash.test.&lt;block-size&gt; -b &lt;block-size&gt;K</code></p>
+
+<h4 id="tuning-a-compression-algorithm">Tuning a compression algorithm</h4>
+
+<p>Squashfs supports different compression algorithms. <code class="language-plaintext highlighter-rouge">mksquashfs</code> command has the option <code class="language-plaintext highlighter-rouge">-comp &lt;comp&gt;</code> to configure the compression algorithm. There are different compressors available:</p>
+
+<ul>
+  <li>gzip (default)</li>
+  <li>lzma</li>
+  <li>lzo</li>
+  <li>lz4</li>
+  <li>xz</li>
+  <li>zstd</li>
+</ul>
+
+<p><code class="language-plaintext highlighter-rouge">mksquashfs /tmp/squashfs-root /home/chronos/cros-components/lacros-dogfood-dev/100.0.4881.0/image.squash.test.&lt;block-size&gt; -b &lt;block-size&gt;K -comp gzip</code></p>
+
+<h4 id="tuning-a-hashing-algorithm">Tuning a hashing algorithm</h4>
+
+<p>This is related to dm-verity. <a href="https://chromium.googlesource.com/chromiumos/platform/dm-verity/+/refs/heads/main/verity_main.cc#18">dm-verity</a> decrypt the read request. It uses different hashing algorithms.</p>
+
+<ul>
+  <li>sha256 (default)</li>
+  <li>sha224</li>
+  <li>sha1</li>
+  <li>md5
+We can use hardware implementation of the above algorithms to speed up things.</li>
+</ul>
+
+<h3 id="conclusion">Conclusion</h3>
+
+<p>The purpose of this blog post is to demonstrate how to identify the hotspot and how to explore different parameters affecting the system’s performance. It was an interesting experience and I learned a lot. By sharing all the details about how the problem was broken down and improved, I hope others can learn something as well. As a result of playing around with the various combinations of parameters such as blocksize, compression, and direct-io, we have decided to go with the following configuration.</p>
+
+<ol>
+  <li>For Filesystem,
+    <ul>
+      <li>Blocksize : Changed from <code class="language-plaintext highlighter-rouge">4K</code> to <code class="language-plaintext highlighter-rouge">128K</code></li>
+      <li>Compression algorithm : Changed from <code class="language-plaintext highlighter-rouge">gzip</code> to <code class="language-plaintext highlighter-rouge">xz</code></li>
+      <li>direct-io : Changed from <code class="language-plaintext highlighter-rouge">on</code> to <code class="language-plaintext highlighter-rouge">off</code></li>
+    </ul>
+  </li>
+  <li>dm-verity :
+    <ul>
+      <li>Hashing algorithm : Currently it used <code class="language-plaintext highlighter-rouge">sha256</code>. Either use hardware implementation of <code class="language-plaintext highlighter-rouge">sha256</code> or switch to other algorithm.</li>
+    </ul>
+  </li>
+</ol>
+
+<p><img src="https://notes.igalia.com/uploads/b0a8e7e7-8d1a-48bf-a295-060206faa5c0.png" alt="" /></p>
+
+<p>Your first step should be to identify your current stack and then analyze each layer of your file system stack using the available tools and optimize them. The information provided in this blog may be helpful to you in deciding what to do about your own performance issues. You can get it touch with <a href="abhijeet@igalia.com">me</a> if you need any help.</p>]]></content><author><name></name></author><summary type="html"><![CDATA[When I started working on analyzing the startup time of a browser, I didn’t have an idea where to start. For me, Performance was a number game and trial-n-error approach. The challenge I was looking into is described in bug 1270977, in which the chrome binary hosted on two different partitions behaved differently.]]></summary></entry><entry><title type="html">Introduction to LaCrOS</title><link href="http://abhijeetk.github.io/What-is-LaCrOS/" rel="alternate" type="text/html" title="Introduction to LaCrOS" /><published>2021-01-03T00:00:00+05:30</published><updated>2021-01-03T00:00:00+05:30</updated><id>http://abhijeetk.github.io/What-is-LaCrOS</id><content type="html" xml:base="http://abhijeetk.github.io/What-is-LaCrOS/"><![CDATA[<p>Happy new year to All !!!</p>
+
+<p>Igalia has been collaborating with Google on the LaCrOS project for over a year and has presented updates of the LaCrOS project in the last two BlinkOns.</p>
+
+<p>See ours lightning talk during <a href="https://www.youtube.com/watch?v=6Wgh5x7mLSM&amp;t=1621s">BlinkOn13</a> , and our update from <a href="https://www.youtube.com/watch?v=VrEP7SPfQVM&amp;t=2514s">BlinkOn14</a></p>
+
+<h2 id="what-is-lacros-">What is LaCrOS ?</h2>
+
+<p>For the unfamiliar , the <a href="https://source.chromium.org/chromium/chromium/src/+/main:docs/lacros.md">LaCrOS</a> project decouples the Chrome browser from the Chrome OS window manager and system UI. The name comes from <strong>L</strong>inux <strong>A</strong>nd <strong>C</strong>h<strong>R</strong>ome<strong>OS</strong>.</p>
+
+<p>But, why do we need to do that ? Let’s jump to more details.</p>
+
+<h2 id="why-lacros-">Why LaCrOs ?</h2>
+
+<p>Previously, ChromeOS and Chrome Browser shared the same window manager and system UI binaries, making it difficult for Chrome Browser alone to be updated on Chromebook devices.</p>
+
+<p>This means, when a ChromeOS device is updated, only then the Chrome Browser is updated. It might be frustrating for someone who frequently switches from the latest desktop browser to a browser on ChromeOS.</p>
+
+<p>LaCrOS is Google’s solution to this problem. It allows browser on ChromeOS to update independently of the operating system. Now, old chromebook devices also can have the latest Chrome Browser.</p>
+
+<blockquote>
+  <p>Separating the browser from the OS itself allows the end user to update the browser independently as we do for other devices like desktop, mobile.</p>
+</blockquote>
+
+<p>On Chrome OS, the system UI (including the Ash Window Manager, login screen, etc) and the Web Browser are included in the same binary.  LaCrOS separates this functionality into two binaries. Both of these binaries are built from the same chromium git repository, but they might have different versions. This means, Web Browser and ChromeOS can have different versions and will be updated separately.</p>
+
+<p>Some of the key LaCrOS components are ChromeOS’ built-in Wayland Compositor (<a href="https://source.chromium.org/chromium/chromium/src/+/main:components/exo/">Exo</a>) and the native Linux Wayland support (on top of <a href="https://source.chromium.org/chromium/chromium/src/+/main:docs/ozone_overview.md">Ozone</a>). As part of the project, Linux <a href="https://chromium.googlesource.com/chromium/src/+/main/ui/ozone/platform/wayland/README.md">Wayland</a> is being enhanced to implement ChromeOS specific functionality so that the a newly created browser acts like a Web Browser under ChromeOS.</p>
+
+<p>This new browser which uses Linux Wayland support underneath to communicate with ChromeOS is called a LaCrOS(<strong>L</strong>inux <strong>A</strong>nd <strong>C</strong>h<strong>R</strong>ome<strong>OS</strong>).</p>
+
+<p>In terms of wayland terminology, a LaCrOS-Chrome is a wayland-client and Exo is a wayland-server.</p>
+
+<p>LaCrOS development involves both client and server code changes. ChromeOS implements handlers for requests coming from LaCrOS Browser, and LaCrOS Browser implements handlers for events coming from ChromeOS.</p>
+
+<h2 id="what-is-ash-chrome-">What is Ash-Chrome ?</h2>
+
+<p>Ash-Chrome is the default browser of ChromeOS which is tightly coupled with ChromeOS. For client-server architecture, Ash-Chrome is often referred as a server and used as a synonymous to ChromeOS or Exo.</p>
+
+<p>LaCrOS client request a information from a Ash-Chrome server.</p>
+
+<h2 id="what-is-exo-">What is Exo ?</h2>
+
+<p><a href="https://source.chromium.org/chromium/chromium/src/+/main:components/exo/">Exo</a>(or Exosphere) is a wayland server implementation. LaCrOS is one of the client of Exo. There are other clients of Exo which includes ARC++(Android Apps on ChromeOS) and Crostini (Linux apps on Chrome OS).</p>
+
+<h2 id="a-simplified-lacros-architecture">A simplified LaCrOS Architecture</h2>
+
+<p><img src="https://notes.igalia.com/uploads/b15227e6fe0fbdf1d7661a302.jpg" alt="" /></p>
+
+<p>In the above diagram, LaCrOS Browser communicates with ChromeOS(Ash-Chrome) using a wayland protocol. LaCrOS uses various wayland protocols</p>
+<ul>
+  <li><a href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/wayland-protocols/">Official</a> wayland protocols - These are developed by the Wayland community and well known desktop environments.</li>
+  <li><a href="https://source.chromium.org/chromium/chromium/src/+/main:components/exo/wayland/protocol/">Non-official</a> wayland protocols - These protocols are specific to ChromeOS.</li>
+</ul>
+
+<p>Exo is a wayland server and it supports both the official and non-official wayland protocols. Just for an example, <a href="https://source.chromium.org/chromium/chromium/src/+/main:components/exo/wayland/protocol/aura-shell.xml">aura_shell</a> is a non-official protocol which allows the LaCrOS browser to support the ChromeOS specific features like snapping a window and many more.</p>
+
+<p>Implementation of LaCrOS is inspired from Chrome on desktop linux. My colleague <a href="mailto:msisov@igalia.com">Maksim</a> in his talk <a href="https://www.youtube.com/watch?v=8t4DUIZ94pk">Waylandifying Chromium</a> has explained how a Wayland is used in Chromium.</p>
+
+<p>Next obvious question would be how to build and run the LaCrOS Browser and contribute to feature LaCrOS development.</p>
+
+<h2 id="build--run">Build &amp; Run</h2>
+<p>Refer to <a href="https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/chromeos_build_instructions.md#chromium-os-on-linux-linux_chromeos">Chromium OS on Linux (linux-chromeos)</a> before building code</p>
+
+<p>You can download a <a href="https://www.chromium.org/developers/gn-build-configuration/">GN</a> args necessary to build a LaCrOS on linux-desktop from an already running <code class="language-plaintext highlighter-rouge">linux-lacros-rel</code> build bot.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>chromium/src$tools/mb/mb.py gen -m tryserver.chromium.chromiumos -b \'linux-lacros-rel' out/linux-lacros-rel
+</code></pre></div></div>
+
+<p>The above command downloads the GN args and writes the file name args.gn in the output directory <code class="language-plaintext highlighter-rouge">out/linux-lacros-rel</code>.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># file: args.gn
+also_build_ash_chrome = true
+blink_enable_generated_code_formatting = false
+chromeos_is_browser_only = true
+dcheck_always_on = true
+is_component_build = false
+is_debug = false
+symbol_level = 0
+target_os = "chromeos"
+use_goma = true
+</code></pre></div></div>
+<p><code class="language-plaintext highlighter-rouge">also_build_ash_chrome = true</code> tells a <a href="https://chromium.googlesource.com/chromium/src.git/+/56.0.2924.56/docs/ninja_build.md">ninja</a> to build Ash-Chrome(wayland server) along with LaCrOS Browser(wayland client)</p>
+
+<ul>
+  <li>
+    <h3 id="build">Build</h3>
+    <p>To build the code run the below command from your chromium source directory.</p>
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>chromium/src$autoninja -C out/linux-lacros-rel/ chrome all -j500
+</code></pre></div>    </div>
+    <p>After build, Ash-Chrome is located at location <code class="language-plaintext highlighter-rouge">out/linux-lacros-rel/ash_clang_x64/test_ash_chrome</code> and LaCrOS Browser is located at location <code class="language-plaintext highlighter-rouge">out/linux-lacros-rel/chrome</code>.</p>
+  </li>
+  <li>
+    <h3 id="run">Run</h3>
+    <p>To run the use the below command</p>
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>chromium/src$XDG_RUNTIME_DIR=/tmp/ash_chrome_xdg_runtime out/linux-lacros-rel/ash_clang_x64/test_ash_chrome --user-data-dir=/tmp/ash-chrome --enable-wayland-server --no-startup-window --enable-features=LacrosSupport --lacros-chrome-path=$PWD/out/linux-lacros-rel --enable-logging=stderr
+</code></pre></div>    </div>
+    <p>It launches the ChromiumOS emulator with support for LaCrOS browser
+The instructions to run are also publicly available on some issues on <a href="https://bugs.chromium.org/p/chromium/issues/list?q=%22--lacros-chrome-path%22&amp;can=1">crbug.com.</a> If you want more information about the different command line parameters, you can check bugs.</p>
+  </li>
+</ul>
+
+<h2 id="lacros-window-during-blinkon-13">LaCrOS window during BlinkOn 13</h2>
+
+<p><img src="https://notes.igalia.com/uploads/b15227e6fe0fbdf1d7661a304.png" alt="" /></p>
+
+<p>In the above image, the window of LaCrOS-Chrome looks visually different from the Ash-Chrome. If you look carefully, you will notice that the scrollbar and the browser window’s frame appear differently and LaCrOS-Chrome does not have drop shadows.</p>
+
+<h2 id="lacros-window-during-blinkon-14">LaCrOS window during BlinkOn 14</h2>
+
+<p><img src="https://notes.igalia.com/uploads/b15227e6fe0fbdf1d7661a305.png" alt="" /></p>
+
+<p>This image depicts the state of LaCrOS Browser at the time of <a href="https://www.chromium.org/events/blinkon-14">the BlinkOn 14 conference</a>. As you can see both browsers look almost identical.</p>
+
+<h2 id="igalias-contribution-to-lacros-in-2021">Igalia’s contribution to LaCrOS in 2021</h2>
+<p>To achieve visual parity between both browsers, our team at Igalia has worked to support various features and bugs related to</p>
+<ul>
+  <li>Rounded corners for browser window</li>
+  <li>Scrollbars style, thickness and fade behavior</li>
+  <li>Resizing behavior</li>
+  <li>Shadows (Drop shadow for window &amp; menu, resizer shadow)</li>
+  <li>Menus (Right-Click menus, Three-Dot menus)</li>
+  <li>Tooltips</li>
+  <li>Tablet mode</li>
+  <li>Window Snapping</li>
+  <li>HiDPI/Mixed DPI</li>
+  <li>Touch based window dragging support</li>
+  <li>Multiple display</li>
+  <li>Scaling</li>
+  <li>Enhanced tab dragging</li>
+</ul>
+
+<p>LaCrOS Browser evolution in the last one year can be seen in this video.</p>
+
+<figure class="video_container">
+  <iframe src="https://www.youtube.com/embed/LWF-aCcWyLI" frameborder="0" allowfullscreen="true"> </iframe>
+</figure>
+
+<p>This video demonstrated the visual similarities between the Ash-Chrome and LaCrOS-Chrome. You can notice the similarities for</p>
+<ul>
+  <li>Drop shadows for a browser window frame</li>
+  <li>Resizer shadows after hovering a mouse on browser window edges</li>
+  <li>Right-Click menus, Three-Dot menus look and feel is same</li>
+  <li>Scrollbars</li>
+  <li>Window snapping for LaCrOS Browser window</li>
+  <li>Workspace resizing</li>
+</ul>
+
+<h2 id="and-more-">And more …</h2>
+<p>In addition to what has been commented above, we recently completed the <strong>Multi Desk</strong> support and <strong>WebUI Tab Strip</strong> features:</p>
+<ul>
+  <li>Multi-Desk 
+This feature allows the user to add desks to organize multiple windows and multi-task.
+The LaCrOS-Chrome browser supports this feature by adding a request to a aura_shell wayland protocol. My colleague <a href="mailto:mkim@igalia.com">Minju Kim</a> has contributed to an implementation of this feature.
+See the working of the Multi-Desk in LaCrOS in the video below.</li>
+</ul>
+
+<figure class="video_container">
+  <iframe src="https://www.youtube.com/embed/BuyocSkrbl4" frameborder="0" allowfullscreen="true"> </iframe>
+</figure>
+
+<ul>
+  <li>WebUi Tab Strip
+This feature adds a new tab bar to the browser, featuring page thumbnail previews and a touch friendly UI. My colleague <a href="mailto:tonikitoo@igalia.com">Antonio</a> has contributed to an implementation of this feature.</li>
+</ul>
+
+<p>Last but not least, our Chromium team is also working in parallel on fixing several window manager integration issues as part of this work, so please stay tuned for more updates on our efforts related to LaCrOS development :)</p>]]></content><author><name></name></author><summary type="html"><![CDATA[Happy new year to All !!!]]></summary></entry><entry><title type="html">Up and running WebChimera with nwjs</title><link href="http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-Win/" rel="alternate" type="text/html" title="Up and running WebChimera with nwjs" /><published>2016-11-11T00:00:00+05:30</published><updated>2016-11-11T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-Win</id><content type="html" xml:base="http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-Win/"><![CDATA[<ul>
+  <li>
+    <h3 id="add-proxy-to-windows-environment">Add proxy to windows environment</h3>
+  </li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">set </span><span class="nv">http_proxy</span><span class="o">=</span><span class="s2">"http://&lt;user&gt;:&lt;password&gt;@&lt;ip&gt;:&lt;port&gt;"</span>
+<span class="nb">set </span><span class="nv">https_proxy</span><span class="o">=</span><span class="s2">"http://&lt;user&gt;:&lt;password&gt;@&lt;ip&gt;:&lt;port&gt;"</span>
+</code></pre></div></div>
+
+<ul>
+  <li>
+    <h3 id="install-build-dependencies-for-webchimera">Install build dependencies for WebChimera</h3>
+  </li>
+</ul>
+
+<p>Refer link : <a href="https://github.com/RSATom/WebChimera.js#windows">https://github.com/RSATom/WebChimera.js#windows</a></p>
+
+<ol>
+  <li>Visual Studio Community 2013/2015 - (I tried with VS2015)</li>
+  <li>Install VLC Player 32 bit and add it to PATH environment variable (Used to build webchimera)</li>
+  <li>CMake - cmake-3.6.0-rc2-win64-x64.msi</li>
+  <li>Node.js</li>
+  <li>Install <strong>NW.js ia32</strong> add it to PATH environment variable (Used to run player)</li>
+</ol>
+
+<ul>
+  <li>
+    <h3 id="add-proxy-to-npm-packaging-system">Add proxy to npm packaging system</h3>
+  </li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>npm config <span class="nb">set </span>proxy http://&lt;user&gt;:&lt;password&gt;@&lt;ip&gt;:&lt;port&gt; 
+npm config <span class="nb">set </span>https-proxy http://&lt;user&gt;:&lt;password&gt;@&lt;ip&gt;:&lt;port&gt;
+</code></pre></div></div>
+
+<p>Check npm configuration in <strong>C:\Users&lt;user&gt;.npmrc</strong></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>https-proxy<span class="o">=</span>http://&lt;user&gt;:&lt;password&gt;@43.88.64.10:8080/
+<span class="nv">proxy</span><span class="o">=</span>http://&lt;user&gt;:&lt;password&gt;@43.88.64.10:8080/
+</code></pre></div></div>
+
+<ul>
+  <li>
+    <h3 id="check-cmake-generators">Check cmake generators</h3>
+  </li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cmake <span class="nt">--help</span>
+</code></pre></div></div>
+
+<p><img src="/images/Up-and-running-WebChimera-with-nwjs-win/cmake.png" alt="alt text" title="Up and running WebChimera with nwjs" /></p>
+
+<ul>
+  <li>
+    <h3 id="clone-code-and-build-it">Clone code and build it</h3>
+  </li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/RSATom/wcjs-ugly-demo.git
+<span class="nb">cd </span>wcjs-ugly-demo/
 build_nwjs.cmd
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+</code></pre></div></div>
 
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;run&quot;&gt;Run&lt;/h3&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li>
+    <h3 id="run">Run</h3>
+  </li>
+</ul>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;run_nwjs.cmd
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<div class="language-diff highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">run_nwjs.cmd
+</span></code></pre></div></div>
 
-&lt;p&gt;&lt;img src=&quot;/images/Up-and-running-WebChimera-with-nwjs-win/nw-wcjs-win.png&quot; alt=&quot;alt text&quot; title=&quot;Up and running WebChimera with nwjs&quot; /&gt;&lt;/p&gt;</content><summary>Add proxy to windows environment</summary></entry><entry><title>Up and running webassembly in browser</title><link href="http://abhijeetk.github.io/Up-and-running-webassembly/" rel="alternate" type="text/html" title="Up and running webassembly in browser" /><published>2016-10-10T00:00:00+05:30</published><updated>2016-10-10T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Up-and-running-webassembly</id><content type="html" xml:base="http://abhijeetk.github.io/Up-and-running-webassembly/">&lt;h2 id=&quot;asm-to-webassembly&quot;&gt;ASM to WebAssembly&lt;/h2&gt;
+<p><img src="/images/Up-and-running-WebChimera-with-nwjs-win/nw-wcjs-win.png" alt="alt text" title="Up and running WebChimera with nwjs" /></p>]]></content><author><name></name></author><summary type="html"><![CDATA[Add proxy to windows environment]]></summary></entry><entry><title type="html">Up and running WebChimera with nwjs Ubuntu</title><link href="http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-ubuntu/" rel="alternate" type="text/html" title="Up and running WebChimera with nwjs Ubuntu" /><published>2016-11-11T00:00:00+05:30</published><updated>2016-11-11T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-ubuntu</id><content type="html" xml:base="http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-ubuntu/"><![CDATA[<ul>
+  <li>
+    <h3 id="add-proxy-to-bashrc">Add proxy to ~/.bashrc</h3>
+  </li>
+</ul>
 
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;prerequisite&quot;&gt;Prerequisite&lt;/h3&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">http_proxy</span><span class="o">=</span><span class="s2">"http://&lt;user&gt;:&lt;password&gt;@&lt;ip&gt;:&lt;port&gt;"</span>
+<span class="nb">export </span><span class="nv">https_proxy</span><span class="o">=</span><span class="s2">"http://&lt;user&gt;:&lt;password&gt;@&lt;ip&gt;:&lt;port&gt;"</span>
+</code></pre></div></div>
 
-&lt;ol&gt;
-  &lt;li&gt;Visual Studio 2015&lt;/li&gt;
-  &lt;li&gt;cmake&lt;/li&gt;
-&lt;/ol&gt;
+<ul>
+  <li>
+    <h3 id="add-proxy-to-packaging-system">Add proxy to packaging system</h3>
+  </li>
+</ul>
 
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;clone-binaryentranscompiler-for-wasm&quot;&gt;Clone binaryen(transcompiler for wasm)&lt;/h3&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<p>If <strong>sudo apt-get update</strong> is not working, add below line to <strong><em>/etc/apt/apt.conf</em></strong>.</p>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;mkdir wasmdemo
-&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;wasmdemo
+<p>Create /etc/apt/apt.conf if it doesn’t exist and add line below</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Acquire::http::Proxy <span class="s2">"http://&lt;user&gt;:&lt;password&gt;@43.88.64.10:8080"</span><span class="p">;</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>gedit /etc/apt/apt.conf
+</code></pre></div></div>
+
+<ul>
+  <li>
+    <h3 id="install-buil-dependencies">Install buil dependencies</h3>
+  </li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt-get update
+<span class="nb">sudo </span>apt-get <span class="nb">install </span>build-essential cmake libvlc-dev
+<span class="nb">sudo </span>apt-get <span class="nb">install </span>vlc
+<span class="nb">sudo </span>apt-get <span class="nb">install </span>git
+<span class="nb">sudo </span>apt-get <span class="nb">install </span>npm 
+npm <span class="nt">-v</span>
+npm config <span class="nb">set </span>proxy <span class="s2">"http://&lt;userid&gt;:&lt;passwd&gt;@43.88.64.10:8080"</span>
+npm config <span class="nb">set </span>https-proxy <span class="s2">"http://&lt;userid&gt;:&lt;passwd&gt;@43.88.64.10:8080"</span>
+<span class="nb">sudo </span>npm <span class="nb">install</span> <span class="nt">-g</span> npm@latest
+npm <span class="nt">-v</span>
+</code></pre></div></div>
+
+<ul>
+  <li>
+    <h3 id="clone-code-and-build-it">Clone code and build it</h3>
+  </li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">mkdir </span>work
+<span class="nb">cd </span>work/
+git clone https://github.com/RSATom/wcjs-ugly-demo.git
+<span class="nb">cd </span>wcjs-ugly-demo/
+./build_nwjs.sh 
+</code></pre></div></div>
+
+<ul>
+  <li>
+    <h3 id="run">Run</h3>
+  </li>
+</ul>
+
+<div class="language-diff highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">wget http://dl.nwjs.io/v0.12.0/nwjs-v0.12.0-linux-x64.tar.gz
+tar -xvzf nwjs-v0.12.0-linux-x64.tar.gz 
+export PATH=/home/abhijeet/work/wcjs-ugly-demo/nwjs-v0.12.0-linux-x64:"$PATH"
+gedit index.html (Edit it to add http or https URL for video)
+</span>./run_nwjs.sh
+</code></pre></div></div>
+
+<p><img src="/images/Up-and-running-WebChimera-with-nwjs-ubuntu/WebChimera.png" alt="alt text" title="Up and running WebChimera with nwjs Ubuntu" /></p>]]></content><author><name></name></author><summary type="html"><![CDATA[Add proxy to ~/.bashrc]]></summary></entry><entry><title type="html">Up and running webassembly in browser</title><link href="http://abhijeetk.github.io/Up-and-running-webassembly/" rel="alternate" type="text/html" title="Up and running webassembly in browser" /><published>2016-10-10T00:00:00+05:30</published><updated>2016-10-10T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Up-and-running-webassembly</id><content type="html" xml:base="http://abhijeetk.github.io/Up-and-running-webassembly/"><![CDATA[<h2 id="asm-to-webassembly">ASM to WebAssembly</h2>
+
+<ul>
+  <li>
+    <h3 id="prerequisite">Prerequisite</h3>
+  </li>
+</ul>
+
+<ol>
+  <li>Visual Studio 2015</li>
+  <li>cmake</li>
+</ol>
+
+<ul>
+  <li>
+    <h3 id="clone-binaryentranscompiler-for-wasm">Clone binaryen(transcompiler for wasm)</h3>
+  </li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">mkdir </span>wasmdemo
+<span class="nb">cd </span>wasmdemo
 git clone https://github.com/WebAssembly/binaryen.git
-&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;binaryen
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<span class="nb">cd </span>binaryen
+</code></pre></div></div>
 
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;build-code&quot;&gt;Build code&lt;/h3&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li>
+    <h3 id="build-code">Build code</h3>
+  </li>
+</ul>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;wasmdemo&lt;span class=&quot;se&quot;&gt;\b&lt;/span&gt;inaryen&amp;gt;cmake .
-wasmdemo&lt;span class=&quot;se&quot;&gt;\b&lt;/span&gt;inaryen&amp;gt;cmake --build . --config Release
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>wasmdemo<span class="se">\b</span>inaryen&gt;cmake <span class="nb">.</span>
+wasmdemo<span class="se">\b</span>inaryen&gt;cmake <span class="nt">--build</span> <span class="nb">.</span> <span class="nt">--config</span> Release
+</code></pre></div></div>
 
-&lt;p&gt;&lt;img src=&quot;/images/Up-and-running-webassembly/binaryenBuild.png&quot; alt=&quot;alt text&quot; title=&quot;Up and running webassembly in browser&quot; /&gt;&lt;/p&gt;
+<p><img src="/images/Up-and-running-webassembly/binaryenBuild.png" alt="alt text" title="Up and running webassembly in browser" /></p>
 
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;utilities-gets-generated-after-build-in-binaryenbin&quot;&gt;Utilities gets generated after build in binaryen/bin&lt;/h3&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li>
+    <h3 id="utilities-gets-generated-after-build-in-binaryenbin">Utilities gets generated after build in binaryen/bin</h3>
+  </li>
+</ul>
 
-&lt;p&gt;&lt;img src=&quot;/images/Up-and-running-webassembly/Utilities.png&quot; alt=&quot;alt text&quot; title=&quot;Up and running webassembly in browser&quot; /&gt;&lt;/p&gt;
+<p><img src="/images/Up-and-running-webassembly/Utilities.png" alt="alt text" title="Up and running webassembly in browser" /></p>
 
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;create-helloworldasmjs-file-with-content-below&quot;&gt;Create hello_world.asm.js file with content below&lt;/h3&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li>
+    <h3 id="create-hello_worldasmjs-file-with-content-below">Create hello_world.asm.js file with content below</h3>
+  </li>
+</ul>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;function &lt;/span&gt;MyMathModule&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;global&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;s2&quot;&gt;&quot;use asm&quot;&lt;/span&gt;;
-    var exp &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; global.Math.exp;
-    &lt;span class=&quot;k&quot;&gt;function &lt;/span&gt;doubleExp&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;value&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-        value &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; +value;
-        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; +&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;+exp&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;+value&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;*&lt;/span&gt; 2.0&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; doubleExp: doubleExp &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">function </span>MyMathModule<span class="o">(</span>global<span class="o">)</span> <span class="o">{</span>
+    <span class="s2">"use asm"</span><span class="p">;</span>
+    var exp <span class="o">=</span> global.Math.exp<span class="p">;</span>
+    <span class="k">function </span>doubleExp<span class="o">(</span>value<span class="o">)</span> <span class="o">{</span>
+        value <span class="o">=</span> +value<span class="p">;</span>
+        <span class="k">return</span> +<span class="o">(</span>+exp<span class="o">(</span>+value<span class="o">)</span> <span class="k">*</span> 2.0<span class="o">)</span><span class="p">;</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="o">{</span> doubleExp: doubleExp <span class="o">}</span><span class="p">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
 
-&lt;p&gt;&lt;img src=&quot;/images/Up-and-running-webassembly/asm2wasm.png&quot; alt=&quot;alt text&quot; title=&quot;Up and running webassembly in browser&quot; /&gt;&lt;/p&gt;
+<p><img src="/images/Up-and-running-webassembly/asm2wasm.png" alt="alt text" title="Up and running webassembly in browser" /></p>
 
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;wasm-asexe-is-a-wasm-assembler-which-converts-intermediate-ast-to-wasm-binary&quot;&gt;wasm-as.exe is a wasm assembler which converts intermediate AST to wasm binary&lt;/h3&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li>
+    <h3 id="wasm-asexe-is-a-wasm-assembler-which-converts-intermediate-ast-to-wasm-binary">wasm-as.exe is a wasm assembler which converts intermediate AST to wasm binary</h3>
+  </li>
+</ul>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;wasmdemo\binaryen\bin&amp;gt;wasm-as.exe hello_world.wast -o hello_world.wasm
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<div class="language-diff highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">wasmdemo\binaryen\bin&gt;wasm-as.exe hello_world.wast -o hello_world.wasm
+</span></code></pre></div></div>
 
-&lt;p&gt;&lt;img src=&quot;/images/Up-and-running-webassembly/wasm-as.png&quot; alt=&quot;alt text&quot; title=&quot;Up and running webassembly in browser&quot; /&gt;&lt;/p&gt;
+<p><img src="/images/Up-and-running-webassembly/wasm-as.png" alt="alt text" title="Up and running webassembly in browser" /></p>
 
-&lt;h2 id=&quot;running-webassembly-in-browser&quot;&gt;Running WebAssembly in Browser&lt;/h2&gt;
+<h2 id="running-webassembly-in-browser">Running WebAssembly in Browser</h2>
 
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;We need to access WebAssembly on the Web is through an explicit JS API.
-Refer &lt;a href=&quot;https://github.com/WebAssembly/design/blob/master/JS.md&quot;&gt;https://github.com/WebAssembly/design/blob/master/JS.md&lt;/a&gt; for more information.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Create file &lt;em&gt;index.html&lt;/em&gt; with content below :&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li>
+    <p>We need to access WebAssembly on the Web is through an explicit JS API.
+Refer <a href="https://github.com/WebAssembly/design/blob/master/JS.md">https://github.com/WebAssembly/design/blob/master/JS.md</a> for more information.</p>
+  </li>
+  <li>
+    <p>Create file <em>index.html</em> with content below :</p>
+  </li>
+</ul>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;script&amp;gt;
-fetch&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;hello_world.wasm&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-.then&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;response&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;return &lt;/span&gt;response.arrayBuffer&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;;
-&lt;span class=&quot;o&quot;&gt;})&lt;/span&gt;
-.then&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;buffer&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-var dependencies &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-&lt;span class=&quot;s2&quot;&gt;&quot;global&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{}&lt;/span&gt;,
-&lt;span class=&quot;s2&quot;&gt;&quot;env&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;{}&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;;
-dependencies[&lt;span class=&quot;s2&quot;&gt;&quot;global.Math&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; window.Math;
-var moduleBufferView &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; new Uint8Array&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;buffer&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;;
-var myMathModule &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; Wasm.instantiateModule&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;moduleBufferView, dependencies&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;;
-console.log&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;myMathModule.exports.doubleExp&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;;
-&lt;span class=&quot;k&quot;&gt;for&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;var i &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; 0; i &amp;lt; 5; i++&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-console.log&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;myMathModule.exports.doubleExp&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;i&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt;;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;})&lt;/span&gt;;
-&amp;lt;/script&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;script&gt;
+fetch<span class="o">(</span><span class="s2">"hello_world.wasm"</span><span class="o">)</span>
+.then<span class="o">(</span><span class="k">function</span><span class="o">(</span>response<span class="o">)</span> <span class="o">{</span>
+<span class="k">return </span>response.arrayBuffer<span class="o">()</span><span class="p">;</span>
+<span class="o">})</span>
+.then<span class="o">(</span><span class="k">function</span><span class="o">(</span>buffer<span class="o">)</span> <span class="o">{</span>
+var dependencies <span class="o">=</span> <span class="o">{</span>
+<span class="s2">"global"</span>: <span class="o">{}</span>,
+<span class="s2">"env"</span>: <span class="o">{}</span>
+<span class="o">}</span><span class="p">;</span>
+dependencies[<span class="s2">"global.Math"</span><span class="o">]</span> <span class="o">=</span> window.Math<span class="p">;</span>
+var moduleBufferView <span class="o">=</span> new Uint8Array<span class="o">(</span>buffer<span class="o">)</span><span class="p">;</span>
+var myMathModule <span class="o">=</span> Wasm.instantiateModule<span class="o">(</span>moduleBufferView, dependencies<span class="o">)</span><span class="p">;</span>
+console.log<span class="o">(</span>myMathModule.exports.doubleExp<span class="o">)</span><span class="p">;</span>
+<span class="k">for</span><span class="o">(</span>var i <span class="o">=</span> 0<span class="p">;</span> i &lt; 5<span class="p">;</span> i++<span class="o">)</span> <span class="o">{</span>
+console.log<span class="o">(</span>myMathModule.exports.doubleExp<span class="o">(</span>i<span class="o">))</span><span class="p">;</span>
+<span class="o">}</span>
+<span class="o">})</span><span class="p">;</span>
+&lt;/script&gt;
+</code></pre></div></div>
 
-&lt;p&gt;&lt;img src=&quot;/images/Up-and-running-webassembly/server_content.png&quot; alt=&quot;alt text&quot; title=&quot;Up and running webassembly in browser&quot; /&gt;&lt;/p&gt;
+<p><img src="/images/Up-and-running-webassembly/server_content.png" alt="alt text" title="Up and running webassembly in browser" /></p>
 
-&lt;ul&gt;
-  &lt;li&gt;Run code through local server and open file in &lt;strong&gt;Chrome Canary&lt;/strong&gt; web browser.&lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li>Run code through local server and open file in <strong>Chrome Canary</strong> web browser.</li>
+</ul>
 
-&lt;p&gt;&lt;em&gt;Other browsers might give an error as binaryen version used to build wasm file and binaryen version inside browser is different.&lt;/em&gt;&lt;/p&gt;
+<p><em>Other browsers might give an error as binaryen version used to build wasm file and binaryen version inside browser is different.</em></p>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;TypeError: wasm validation error at offset 8: failed to match binary version
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>TypeError: wasm validation error at offset 8: failed to match binary version
+</code></pre></div></div>
 
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;output&quot;&gt;Output&lt;/h3&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li>
+    <h3 id="output">Output</h3>
+  </li>
+</ul>
 
-&lt;p&gt;&lt;img src=&quot;/images/Up-and-running-webassembly/output.png&quot; alt=&quot;alt text&quot; title=&quot;Up and running webassembly in browser&quot; /&gt;&lt;/p&gt;
+<p><img src="/images/Up-and-running-webassembly/output.png" alt="alt text" title="Up and running webassembly in browser" /></p>
 
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;references&quot;&gt;References&lt;/h3&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li>
+    <h3 id="references">References</h3>
+  </li>
+</ul>
 
-&lt;p&gt;&lt;a href=&quot;http://cultureofdevelopment.com/blog/build-your-first-thing-with-web-assembly/&quot;&gt;http://cultureofdevelopment.com/blog/build-your-first-thing-with-web-assembly/&lt;/a&gt;
-&lt;a href=&quot;https://github.com/WebAssembly/design/blob/master/JS.md&quot;&gt;https://github.com/WebAssembly/design/blob/master/JS.md&lt;/a&gt;
-&lt;a href=&quot;https://github.com/brakmic/brakmic/blob/master/webassembly/COMPILING_WIN32.md&quot;&gt;https://github.com/brakmic/brakmic/blob/master/webassembly/COMPILING_WIN32.md&lt;/a&gt;&lt;/p&gt;</content><summary>ASM to WebAssembly</summary></entry><entry><title>Up and running ASM.js in browser</title><link href="http://abhijeetk.github.io/Up-and-running-ASMjs/" rel="alternate" type="text/html" title="Up and running ASM.js in browser" /><published>2016-07-10T00:00:00+05:30</published><updated>2016-07-10T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Up-and-running-ASMjs</id><content type="html" xml:base="http://abhijeetk.github.io/Up-and-running-ASMjs/">&lt;ul&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;install-emscripten-sdk&quot;&gt;Install Emscripten SDK&lt;/h3&gt;
-    &lt;p&gt;Download Emscripten SDK Offline Installer and install it. For more information about installation process refer &lt;a href=&quot;https://kripken.github.io/emscripten-site/docs/getting_started/index.html&quot;&gt;https://kripken.github.io/emscripten-site/docs/getting_started/index.html&lt;/a&gt;&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;check-emscripten-installation&quot;&gt;Check Emscripten installation&lt;/h3&gt;
-    &lt;p&gt;Click on &lt;em&gt;Windows -&amp;gt; Search&lt;/em&gt; and search for Emscripten Command Prompt. Check Emscripten version.&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<p><a href="http://cultureofdevelopment.com/blog/build-your-first-thing-with-web-assembly/">http://cultureofdevelopment.com/blog/build-your-first-thing-with-web-assembly/</a>
+<a href="https://github.com/WebAssembly/design/blob/master/JS.md">https://github.com/WebAssembly/design/blob/master/JS.md</a>
+<a href="https://github.com/brakmic/brakmic/blob/master/webassembly/COMPILING_WIN32.md">https://github.com/brakmic/brakmic/blob/master/webassembly/COMPILING_WIN32.md</a></p>]]></content><author><name></name></author><summary type="html"><![CDATA[ASM to WebAssembly]]></summary></entry><entry><title type="html">Up and running ASM.js in browser</title><link href="http://abhijeetk.github.io/Up-and-running-ASMjs/" rel="alternate" type="text/html" title="Up and running ASM.js in browser" /><published>2016-07-10T00:00:00+05:30</published><updated>2016-07-10T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Up-and-running-ASMjs</id><content type="html" xml:base="http://abhijeetk.github.io/Up-and-running-ASMjs/"><![CDATA[<ul>
+  <li>
+    <h3 id="install-emscripten-sdk">Install Emscripten SDK</h3>
+    <p>Download Emscripten SDK Offline Installer and install it. For more information about installation process refer <a href="https://kripken.github.io/emscripten-site/docs/getting_started/index.html">https://kripken.github.io/emscripten-site/docs/getting_started/index.html</a></p>
+  </li>
+  <li>
+    <h3 id="check-emscripten-installation">Check Emscripten installation</h3>
+    <p>Click on <em>Windows -&gt; Search</em> and search for Emscripten Command Prompt. Check Emscripten version.</p>
+  </li>
+</ul>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;emcc -v
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>emcc <span class="nt">-v</span>
+</code></pre></div></div>
 
-&lt;p&gt;&lt;strong&gt;emcc is transcompiler to compile C/C++ code to javascript code.&lt;/strong&gt;&lt;/p&gt;
+<p><strong>emcc is transcompiler to compile C/C++ code to javascript code.</strong></p>
 
-&lt;p&gt;&lt;img src=&quot;/images/Up-and-running-ASM-js/emcc_version.png&quot; alt=&quot;alt text&quot; title=&quot;Up and running ASM.js in browser&quot; /&gt;&lt;/p&gt;
+<p><img src="/images/Up-and-running-ASM-js/emcc_version.png" alt="alt text" title="Up and running ASM.js in browser" /></p>
 
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;create-cc-test-file&quot;&gt;Create C/C++ test file&lt;/h3&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li>
+    <h3 id="create-cc-test-file">Create C/C++ test file</h3>
+  </li>
+</ul>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;mkdir asmdemo
-&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;asmdemo
-copy NUL hello-world.c &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;create hello-world.c&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">mkdir </span>asmdemo
+<span class="nb">cd </span>asmdemo
+copy NUL hello-world.c <span class="o">(</span>create hello-world.c<span class="o">)</span>
+</code></pre></div></div>
 
-&lt;p&gt;Copy following content into newly created hello-world.c&lt;/p&gt;
+<p>Copy following content into newly created hello-world.c</p>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;#include&amp;lt;stdio.h&amp;gt;&lt;/span&gt;
-int main&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;nb&quot;&gt;printf&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;hello, world!&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;;
-  &lt;span class=&quot;k&quot;&gt;return &lt;/span&gt;0;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#include&lt;stdio.h&gt;</span>
+int main<span class="o">()</span> <span class="o">{</span>
+  <span class="nb">printf</span><span class="o">(</span><span class="s2">"hello, world!</span><span class="se">\n</span><span class="s2">"</span><span class="o">)</span><span class="p">;</span>
+  <span class="k">return </span>0<span class="p">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
 
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;compile-cc-code-using-emcc&quot;&gt;Compile C/C++ code using emcc&lt;/h3&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li>
+    <h3 id="compile-cc-code-using-emcc">Compile C/C++ code using emcc</h3>
+  </li>
+</ul>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;emcc hello-world.c
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>emcc hello-world.c
+</code></pre></div></div>
 
-&lt;p&gt;it will create file name a.out.js&lt;/p&gt;
+<p>it will create file name a.out.js</p>
 
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;run&quot;&gt;Run&lt;/h3&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li>
+    <h3 id="run">Run</h3>
+  </li>
+</ul>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;node a.out.js
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>node a.out.js
+</code></pre></div></div>
 
-&lt;p&gt;&lt;img src=&quot;/images/Up-and-running-ASM-js/compile-n-run.png&quot; alt=&quot;alt text&quot; title=&quot;Up and running ASM.js in browser&quot; /&gt;&lt;/p&gt;
+<p><img src="/images/Up-and-running-ASM-js/compile-n-run.png" alt="alt text" title="Up and running ASM.js in browser" /></p>
 
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;h3 id=&quot;asmjs-in-browser&quot;&gt;ASM.js in Browser&lt;/h3&gt;
-  &lt;/li&gt;
-  &lt;li&gt;We want HTML so that we can view it in the browser. Enter this command to specify and HTML document.&lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li>
+    <h3 id="asmjs-in-browser">ASM.js in Browser</h3>
+  </li>
+  <li>We want HTML so that we can view it in the browser. Enter this command to specify and HTML document.</li>
+</ul>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;emcc hello-world.c -o hello.html
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>emcc hello-world.c <span class="nt">-o</span> hello.html
+</code></pre></div></div>
 
-&lt;ul&gt;
-  &lt;li&gt;Open hello.html that with your browser, and you can see it as a web page.&lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li>Open hello.html that with your browser, and you can see it as a web page.</li>
+</ul>
 
-&lt;p&gt;&lt;img src=&quot;/images/Up-and-running-ASM-js/emcc-in-browser.png&quot; alt=&quot;alt text&quot; title=&quot;Up and running ASM.js in browser&quot; /&gt;&lt;/p&gt;</content><summary>Install Emscripten SDK
-    Download Emscripten SDK Offline Installer and install it. For more information about installation process refer https://kripken.github.io/emscripten-site/docs/getting_started/index.html</summary></entry><entry><title>Building ffmpeg form nwjs/chromium repository</title><link href="http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository/" rel="alternate" type="text/html" title="Building ffmpeg form nwjs/chromium repository" /><published>2016-02-28T00:00:00+05:30</published><updated>2016-02-28T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository</id><content type="html" xml:base="http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository/">&lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;Open VS2013 x64 Native Tools Command Prompt
-C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\Shortcuts&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Open C:\cygwin64\Cygwin.bat in VS2013 x64 Native Tools Command Prompt and make sure that compiler and linker are refering to VS2013 64 bit executables as shown below.[Assuming you have cygwin installed on your Windows machine]&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<p><img src="/images/Up-and-running-ASM-js/emcc-in-browser.png" alt="alt text" title="Up and running ASM.js in browser" /></p>]]></content><author><name></name></author><summary type="html"><![CDATA[Install Emscripten SDK Download Emscripten SDK Offline Installer and install it. For more information about installation process refer https://kripken.github.io/emscripten-site/docs/getting_started/index.html]]></summary></entry><entry><title type="html">Building ffmpeg form nwjs/chromium repository</title><link href="http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository/" rel="alternate" type="text/html" title="Building ffmpeg form nwjs/chromium repository" /><published>2016-02-28T00:00:00+05:30</published><updated>2016-02-28T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository</id><content type="html" xml:base="http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository/"><![CDATA[<ul>
+  <li>
+    <p>Open VS2013 x64 Native Tools Command Prompt
+C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\Shortcuts</p>
+  </li>
+  <li>
+    <p>Open C:\cygwin64\Cygwin.bat in VS2013 x64 Native Tools Command Prompt and make sure that compiler and linker are refering to VS2013 64 bit executables as shown below.[Assuming you have cygwin installed on your Windows machine]</p>
+  </li>
+</ul>
 
-&lt;p&gt;&lt;img src=&quot;/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image001.png&quot; alt=&quot;alt text&quot; title=&quot;Building ffmpeg form nwjs/chromium repository&quot; /&gt;&lt;/p&gt;
+<p><img src="/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image001.png" alt="alt text" title="Building ffmpeg form nwjs/chromium repository" /></p>
 
-&lt;ul&gt;
-  &lt;li&gt;Set following environment variables&lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li>Set following environment variables</li>
+</ul>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;GYP_DEFINES&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;host_arch&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;x64 &lt;span class=&quot;nv&quot;&gt;target_arch&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;x64 &lt;span class=&quot;nv&quot;&gt;nwjs_sdk&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1 &lt;span class=&quot;nv&quot;&gt;disable_nacl&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;0 &lt;span class=&quot;nv&quot;&gt;proprietary_codecs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1 &lt;span class=&quot;nv&quot;&gt;branding&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;Chrome
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="nb">set </span><span class="nv">GYP_DEFINES</span><span class="o">=</span><span class="nv">host_arch</span><span class="o">=</span>x64 <span class="nv">target_arch</span><span class="o">=</span>x64 <span class="nv">nwjs_sdk</span><span class="o">=</span>1 <span class="nv">disable_nacl</span><span class="o">=</span>0 <span class="nv">proprietary_codecs</span><span class="o">=</span>1 <span class="nv">branding</span><span class="o">=</span>Chrome
+</code></pre></div></div>
 
-&lt;p&gt;&lt;img src=&quot;/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image002.png&quot; alt=&quot;alt text&quot; title=&quot;Building ffmpeg form nwjs/chromium repository&quot; /&gt;&lt;/p&gt;
+<p><img src="/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image002.png" alt="alt text" title="Building ffmpeg form nwjs/chromium repository" /></p>
 
-&lt;ul&gt;
-  &lt;li&gt;Go to Ffmpeg source code location :&lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li>Go to Ffmpeg source code location :</li>
+</ul>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &amp;lt;node-webkit-dir&amp;gt;&lt;span class=&quot;se&quot;&gt;\s&lt;/span&gt;rc&lt;span class=&quot;se&quot;&gt;\t&lt;/span&gt;hird_party&lt;span class=&quot;se&quot;&gt;\f&lt;/span&gt;fmpeg
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    &lt;node-webkit-dir&gt;<span class="se">\s</span>rc<span class="se">\t</span>hird_party<span class="se">\f</span>fmpeg
+</code></pre></div></div>
 
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;[APPLY PATCH to file ]&lt;/strong&gt; &lt;ffmpeg_src&gt;/chromium/scripts/build_ffmpeg.py&lt;/ffmpeg_src&gt;&lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li><strong>[APPLY PATCH to file ]</strong> <ffmpeg_src>/chromium/scripts/build_ffmpeg.py</ffmpeg_src></li>
+</ul>
 
-&lt;p&gt;Add support of mxf by enabling it as decoder, demuxer and parser&lt;/p&gt;
+<p>Add support of mxf by enabling it as decoder, demuxer and parser</p>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;gd&quot;&gt;-      &#39;--enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw&#39;,
--      &#39;--enable-demuxer=ogg,matroska,wav&#39;,
--      &#39;--enable-parser=opus,vp3,vorbis,vp8&#39;,
-&lt;/span&gt;
-&lt;span class=&quot;gi&quot;&gt;+      &#39;--enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw,mxf&#39;,
-+      &#39;--enable-demuxer=ogg,matroska,wav,mxf&#39;,
-+      &#39;--enable-parser=opus,vp3,vorbis,vp8,mxf&#39;,
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<div class="language-diff highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gd">-      '--enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw',
+-      '--enable-demuxer=ogg,matroska,wav',
+-      '--enable-parser=opus,vp3,vorbis,vp8',
+</span><span class="err">
+</span><span class="gi">+      '--enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw,mxf',
++      '--enable-demuxer=ogg,matroska,wav,mxf',
++      '--enable-parser=opus,vp3,vorbis,vp8,mxf',
+</span></code></pre></div></div>
 
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;[APPLY PATCH to file ]&lt;/strong&gt; : &lt;ffmpeg_src&gt;/chromium/scripts/build_ffmpeg.py&lt;/ffmpeg_src&gt;&lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li><strong>[APPLY PATCH to file ]</strong> : <ffmpeg_src>/chromium/scripts/build_ffmpeg.py</ffmpeg_src></li>
+</ul>
 
-&lt;p&gt;Add support of mxf by enabling it as decoder, demuxer and parser&lt;/p&gt;
+<p>Add support of mxf by enabling it as decoder, demuxer and parser</p>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;       [&#39;chromeos == 1&#39;, {
-         &#39;ffmpeg_branding%&#39;: &#39;&amp;lt;(branding)OS&#39;,
+<div class="language-diff highlighter-rouge"><div class="highlight"><pre class="highlight"><code>       ['chromeos == 1', {
+         'ffmpeg_branding%': '&lt;(branding)OS',
        }, {  # otherwise, assume Chrome/Chromium.
-&lt;span class=&quot;gd&quot;&gt;-        &#39;ffmpeg_branding%&#39;: &#39;&amp;lt;(branding)&#39;,
-&lt;/span&gt;&lt;span class=&quot;gi&quot;&gt;+         &#39;ffmpeg_branding%&#39;: &#39;Chrome&#39;,
-&lt;/span&gt;       }],
+<span class="gd">-        'ffmpeg_branding%': '&lt;(branding)',
+</span><span class="gi">+         'ffmpeg_branding%': 'Chrome',
+</span>       }],
      ],
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+</code></pre></div></div>
 
-&lt;ul&gt;
-  &lt;li&gt;Build standalone ffmpeg code for windows 64 bit.&lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li>Build standalone ffmpeg code for windows 64 bit.</li>
+</ul>
 
-&lt;p&gt;&lt;img src=&quot;/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image003.png&quot; alt=&quot;alt text&quot; title=&quot;Building ffmpeg form nwjs/chromium repository&quot; /&gt;&lt;/p&gt;
+<p><img src="/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image003.png" alt="alt text" title="Building ffmpeg form nwjs/chromium repository" /></p>
 
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;Build will generate following directory &lt;strong&gt;build.x64.win&lt;/strong&gt;&lt;ffmpeg_src&gt; folder.&lt;/ffmpeg_src&gt;&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Copy config and from &lt;strong&gt;build.x64.win&lt;/strong&gt;:&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li>
+    <p>Build will generate following directory <strong>build.x64.win</strong><ffmpeg_src> folder.</ffmpeg_src></p>
+  </li>
+  <li>
+    <p>Copy config and from <strong>build.x64.win</strong>:</p>
+  </li>
+</ul>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ffmpeg_src&amp;gt;./chromium/scripts/copy_config.sh
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ffmpeg_src&gt;./chromium/scripts/copy_config.sh
+</code></pre></div></div>
 
-&lt;p&gt;Regenerate ffmpeg gyp files :&lt;/p&gt;
+<p>Regenerate ffmpeg gyp files :</p>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ffmpeg_src&amp;gt;python chromium/scripts/generate_gyp.py
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ffmpeg_src&gt;python chromium/scripts/generate_gyp.py
+</code></pre></div></div>
 
-&lt;p&gt;&lt;img src=&quot;/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image004.png&quot; alt=&quot;alt text&quot; title=&quot;Building ffmpeg form nwjs/chromium repository&quot; /&gt;&lt;/p&gt;
+<p><img src="/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image004.png" alt="alt text" title="Building ffmpeg form nwjs/chromium repository" /></p>
 
-&lt;p&gt;Following files get modified after running above commands:&lt;/p&gt;
+<p>Following files get modified after running above commands:</p>
 
-&lt;p&gt;&lt;img src=&quot;/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image005.png&quot; alt=&quot;alt text&quot; title=&quot;Building ffmpeg form nwjs/chromium repository&quot; /&gt;&lt;/p&gt;
+<p><img src="/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image005.png" alt="alt text" title="Building ffmpeg form nwjs/chromium repository" /></p>
 
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;Force nwjs(chromium) to regenerate ninja files&lt;/strong&gt; for modified  *.h, *.asm, *.gypi (see previous step): 
-Go to nwjs source code location :  /node-webkit/src&lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li><strong>Force nwjs(chromium) to regenerate ninja files</strong> for modified  *.h, *.asm, *.gypi (see previous step): 
+Go to nwjs source code location :  /node-webkit/src</li>
+</ul>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;src&amp;gt;gclientrunhook–force
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>src&gt;gclientrunhook–force
+</code></pre></div></div>
 
-&lt;p&gt;&lt;img src=&quot;/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image006.png&quot; alt=&quot;alt text&quot; title=&quot;Building ffmpeg form nwjs/chromium repository&quot; /&gt;&lt;/p&gt;
+<p><img src="/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image006.png" alt="alt text" title="Building ffmpeg form nwjs/chromium repository" /></p>
 
-&lt;ul&gt;
-  &lt;li&gt;Build ffmpeg code using ninja to generate ffmpegsumo.dll:&lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li>Build ffmpeg code using ninja to generate ffmpegsumo.dll:</li>
+</ul>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;src&amp;gt;ninja -C out/Debug_x64 ffmpegsumo-j16
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>src&gt;ninja <span class="nt">-C</span> out/Debug_x64 ffmpegsumo-j16
+</code></pre></div></div>
 
-&lt;p&gt;&lt;img src=&quot;/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image007.png&quot; alt=&quot;alt text&quot; title=&quot;Building ffmpeg form nwjs/chromium repository&quot; /&gt;&lt;/p&gt;
+<p><img src="/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image007.png" alt="alt text" title="Building ffmpeg form nwjs/chromium repository" /></p>
 
-&lt;ul&gt;
-  &lt;li&gt;Build nwjs code using ninja and link to ffmpegsumo.dll:&lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li>Build nwjs code using ninja and link to ffmpegsumo.dll:</li>
+</ul>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;src&amp;gt;ninja -C out/Debug_x64 nw -j16
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>src&gt;ninja <span class="nt">-C</span> out/Debug_x64 nw <span class="nt">-j16</span>
+</code></pre></div></div>
 
-&lt;p&gt;&lt;img src=&quot;/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image008.png&quot; alt=&quot;alt text&quot; title=&quot;Building ffmpeg form nwjs/chromium repository&quot; /&gt;&lt;/p&gt;</content><summary>Open VS2013 x64 Native Tools Command Prompt
-C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\Shortcuts</summary></entry><entry><title>Building nwjs on Windows7 64 bit</title><link href="http://abhijeetk.github.io/Building-nwjs-on-Windows7-64-bit/" rel="alternate" type="text/html" title="Building nwjs on Windows7 64 bit" /><published>2016-02-07T00:00:00+05:30</published><updated>2016-02-07T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Building nwjs on Windows7 64 bit</id><content type="html" xml:base="http://abhijeetk.github.io/Building-nwjs-on-Windows7-64-bit/">&lt;h2 id=&quot;install-depottools-&quot;&gt;Install depot_tools :&lt;/h2&gt;
-&lt;ul&gt;
-  &lt;li&gt;Download code&lt;/li&gt;
-&lt;/ul&gt;
+<p><img src="/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image008.png" alt="alt text" title="Building ffmpeg form nwjs/chromium repository" /></p>]]></content><author><name></name></author><summary type="html"><![CDATA[Open VS2013 x64 Native Tools Command Prompt C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\Shortcuts Open C:\cygwin64\Cygwin.bat in VS2013 x64 Native Tools Command Prompt and make sure that compiler and linker are refering to VS2013 64 bit executables as shown below.[Assuming you have cygwin installed on your Windows machine] Set following environment variables set GYP_DEFINES=host_arch=x64 target_arch=x64 nwjs_sdk=1 disable_nacl=0 proprietary_codecs=1 branding=Chrome Go to Ffmpeg source code location : &lt;node-webkit-dir&gt;\src\third_party\ffmpeg [APPLY PATCH to file ] /chromium/scripts/build_ffmpeg.py Add support of mxf by enabling it as decoder, demuxer and parser - '--enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw', - '--enable-demuxer=ogg,matroska,wav', - '--enable-parser=opus,vp3,vorbis,vp8', + '--enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw,mxf', + '--enable-demuxer=ogg,matroska,wav,mxf', + '--enable-parser=opus,vp3,vorbis,vp8,mxf', [APPLY PATCH to file ] : /chromium/scripts/build_ffmpeg.py Add support of mxf by enabling it as decoder, demuxer and parser ['chromeos == 1', { 'ffmpeg_branding%': '&lt;(branding)OS', }, { # otherwise, assume Chrome/Chromium. - 'ffmpeg_branding%': '&lt;(branding)', + 'ffmpeg_branding%': 'Chrome', }], ], Build standalone ffmpeg code for windows 64 bit. Build will generate following directory build.x64.win folder. Copy config and from build.x64.win: ffmpeg_src&gt;./chromium/scripts/copy_config.sh Regenerate ffmpeg gyp files : ffmpeg_src&gt;python chromium/scripts/generate_gyp.py Following files get modified after running above commands: Force nwjs(chromium) to regenerate ninja files for modified *.h, *.asm, *.gypi (see previous step): Go to nwjs source code location : /node-webkit/src src&gt;gclientrunhook–force Build ffmpeg code using ninja to generate ffmpegsumo.dll: src&gt;ninja -C out/Debug_x64 ffmpegsumo-j16 Build nwjs code using ninja and link to ffmpegsumo.dll: src&gt;ninja -C out/Debug_x64 nw -j16]]></summary></entry><entry><title type="html">Building ffmpeg and ffplay on Windows7 64 bit</title><link href="http://abhijeetk.github.io/Building-ffmpeg-and-ffplay-on-Windows7-64-bit/" rel="alternate" type="text/html" title="Building ffmpeg and ffplay on Windows7 64 bit" /><published>2016-02-07T00:00:00+05:30</published><updated>2016-02-07T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Building%20ffmpeg%20and%20ffplay%20on%20Windows7%2064%20bit</id><content type="html" xml:base="http://abhijeetk.github.io/Building-ffmpeg-and-ffplay-on-Windows7-64-bit/"><![CDATA[<p>##Prerequisite for ffmpeg##</p>
+<ul>
+  <li>
+    <p>Install Msys64 on yourmachine. (msys2-x86_64-20150916.exe)</p>
+  </li>
+  <li>
+    <p>Open VS2013 x64 Native Tools Command Prompt
+C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\Shortcuts</p>
+  </li>
+  <li>
+    <p>Run C:/msys64/mingw64_shell.bat in VS2013 x64 Native Tools Command Prompt</p>
+  </li>
+  <li>
+    <p>Check current compiler : It should be pointing to VS2013 compiler</p>
+  </li>
+  <li>
+    <p>Check current linker, if it is referring to /usr/bin/link then we have to change it by renaming link.exe. Rename C:\msys64\usr\bin\link.exe to C:\msys64\usr\bin \link_old.exe</p>
+  </li>
+  <li>YASM : Download YASM from http://www.tortall.net/projects/yasm/releases/yasm-1.3.0-win64.exe
+    <ul>
+      <li>Rename yasm-1.3.0-win64.exe to yasm.exe</li>
+      <li>Place yasm.exe somewhere in your PATH environment variable or Add it to C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin</li>
+    </ul>
+  </li>
+  <li>Make sure to use mingw64_shell.bat to have the correct MinGW-w64 environment. Run following commands in MinGW-w64 to install dependencies.</li>
+</ul>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="c">#normal msys2 packages</span>
+    pacman <span class="nt">-S</span> make pkgconfdiffutils
+    <span class="c"># mingw-w64 packages and toolchains</span>
+    pacman <span class="nt">-S</span> mingw-w64-x86_64-yasm mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL
+</code></pre></div></div>
 
-&lt;ul&gt;
-  &lt;li&gt;Add depot_tools to your PATH:&lt;/li&gt;
-&lt;/ul&gt;
+<p>##Download ffmpeg code##</p>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ export PATH=$PATH:~/depot_tools (MAC/Linux)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="nb">mkdir </span>ffmpeg
+    <span class="nb">cd </span>ffmpeg
+    git clone https://github.com/FFmpeg/FFmpeg.git
+</code></pre></div></div>
 
-&lt;p&gt;On Windows, add depot_tools to PATH enviorment variable.&lt;/p&gt;
+<p>##Build instructions for ffmpeg## 
+Ffmpeg can be built directly using following commands. If you wish to compile shared libraries, add –enable-shared to your configure options.</p>
 
-&lt;h2 id=&quot;get-nwjs-source-code-&quot;&gt;Get nwjs source code :&lt;/h2&gt;
-&lt;ul&gt;
-  &lt;li&gt;Create source directory and download configuration .gclient file.&lt;/li&gt;
-&lt;/ul&gt;
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    ./configure <span class="nt">--toolchain</span><span class="o">=</span>msvc
+    make
+    make <span class="nb">install</span>
+</code></pre></div></div>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    node-webkit
+<p>##Build instructions for ffplay##</p>
+
+<ul>
+  <li>Download SDL from http://www.libsdl.org/release/SDL-devel-1.2.15-VC.zip</li>
+  <li>Extract it and copy
+    <ul>
+      <li>SDL-devel-1.2.15-VC\SDL-1.2.15\include*.*  to C:\msys64\mingw64\include\SDL
+        <ul>
+          <li>Click -&gt; Copy and Replace</li>
+        </ul>
+      </li>
+      <li>SDL-devel-1.2.15-VC\SDL-1.2.15\lib\x64 to
+C:\msys64\mingw64\lib</li>
+    </ul>
+  </li>
+  <li>Open file C:\msys64\mingw64\bin\sdl-config and modify following lines</li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        <span class="nt">--libs</span><span class="o">)</span>
+  <span class="nb">echo</span> <span class="nt">-L</span><span class="k">${</span><span class="nv">exec_prefix</span><span class="k">}</span>/lib <span class="nt">-lSDLmain</span> <span class="nt">-lSDL</span>
+        <span class="p">;;</span>
+      <span class="nt">--static-libs</span><span class="o">)</span>
+  <span class="c">#    --libs|--static-libs)</span>
+  <span class="nb">echo</span> <span class="nt">-L</span><span class="k">${</span><span class="nv">exec_prefix</span><span class="k">}</span>/lib <span class="nt">-lSDLmain</span> <span class="nt">-lSDL</span>
+        <span class="p">;;</span>
+</code></pre></div></div>
+
+<ul>
+  <li>Run following commands :</li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./configure <span class="nt">--enable-ffplay</span> <span class="nt">--toolchain</span><span class="o">=</span>msvc <span class="nt">--disable-shared</span> <span class="nt">--enable-static</span> <span class="nt">--enable-sdl</span> <span class="nt">--extra-ldflags</span><span class="o">=</span><span class="s2">"-Wl,-add-stdcall-alias"</span> <span class="nt">--enable-memalign-hack</span> <span class="nt">--disable-ffmpeg</span> <span class="nt">--pkg-config</span><span class="o">=</span>sdl-config
+</code></pre></div></div>]]></content><author><name></name></author><summary type="html"><![CDATA[##Prerequisite for ffmpeg## Install Msys64 on yourmachine. (msys2-x86_64-20150916.exe)]]></summary></entry><entry><title type="html">Building nwjs on Windows7 64 bit</title><link href="http://abhijeetk.github.io/Building-nwjs-on-Windows7-64-bit/" rel="alternate" type="text/html" title="Building nwjs on Windows7 64 bit" /><published>2016-02-07T00:00:00+05:30</published><updated>2016-02-07T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Building%20nwjs%20on%20Windows7%2064%20bit</id><content type="html" xml:base="http://abhijeetk.github.io/Building-nwjs-on-Windows7-64-bit/"><![CDATA[<p>##Install depot_tools : ##</p>
+<ul>
+  <li>Download code</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+</code></pre></div></div>
+
+<ul>
+  <li>Add depot_tools to your PATH:</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ export PATH=$PATH:~/depot_tools (MAC/Linux)
+</code></pre></div></div>
+
+<p>On Windows, add depot_tools to PATH enviorment variable.</p>
+
+<p>##Get nwjs source code : ##</p>
+<ul>
+  <li>Create source directory and download configuration .gclient file.</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    node-webkit
     cd node-webkit
     touch .gclient
     vi .gclient
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-&lt;ul&gt;
-  &lt;li&gt;Now edit the file .gclient, and paste this into it:&lt;/li&gt;
-&lt;/ul&gt;
+</code></pre></div></div>
+<ul>
+  <li>Now edit the file .gclient, and paste this into it:</li>
+</ul>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    solutions = [
-       { &quot;name&quot;        : &quot;src&quot;,
-         &quot;url&quot;         : &quot;https://github.com/nwjs/chromium.src.git@origin/nw12&quot;,
-         &quot;deps_file&quot;   : &quot;DEPS&quot;,
-         &quot;managed&quot;     : True,
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    solutions = [
+       { "name"        : "src",
+         "url"         : "https://github.com/nwjs/chromium.src.git@origin/nw12",
+         "deps_file"   : "DEPS",
+         "managed"     : True,
        
-         &quot;custom_deps&quot; : {
-           &quot;src/third_party/WebKit/LayoutTests&quot;: None,
-           &quot;src/chrome_frame/tools/test/reference_build/chrome&quot;: None,
-           &quot;src/chrome_frame/tools/test/reference_build/chrome_win&quot;: None,
-           &quot;src/chrome/tools/test/reference_build/chrome&quot;: None,
-           &quot;src/chrome/tools/test/reference_build/chrome_linux&quot;: None,
-           &quot;src/chrome/tools/test/reference_build/chrome_mac&quot;: None,
-           &quot;src/chrome/tools/test/reference_build/chrome_win&quot;: None,
+         "custom_deps" : {
+           "src/third_party/WebKit/LayoutTests": None,
+           "src/chrome_frame/tools/test/reference_build/chrome": None,
+           "src/chrome_frame/tools/test/reference_build/chrome_win": None,
+           "src/chrome/tools/test/reference_build/chrome": None,
+           "src/chrome/tools/test/reference_build/chrome_linux": None,
+           "src/chrome/tools/test/reference_build/chrome_mac": None,
+           "src/chrome/tools/test/reference_build/chrome_win": None,
          },
-         &quot;safesync_url&quot;: &quot;&quot;,
+         "safesync_url": "",
        },
     ]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+</code></pre></div></div>
 
-&lt;ul&gt;
-  &lt;li&gt;Environment variables&lt;/li&gt;
-&lt;/ul&gt;
+<ul>
+  <li>Environment variables</li>
+</ul>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    DEPOT_TOOLS_WIN_TOOLCHAIN=0 
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    DEPOT_TOOLS_WIN_TOOLCHAIN=0 
     DXSDK_DIR=C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\  
     GYP_GENERATOR=ninja,msvs
     GYP_GENERATORS=ninja
     GYP_DEFINES=nwjs_sdk=1 disable_nacl=0 proprietary_codecs=1
     GYP_MSVS_VERSION=2013
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+</code></pre></div></div>
 
-&lt;p&gt;Add machine architecture information:
-For 64 bit OS :&lt;/p&gt;
+<p>Add machine architecture information:
+For 64 bit OS :</p>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    $GYP_DEFINES=host_arch=x64 target_arch=x64 
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    $GYP_DEFINES=host_arch=x64 target_arch=x64 
+</code></pre></div></div>
 
-&lt;h2 id=&quot;sync-code&quot;&gt;Sync Code&lt;/h2&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    $node-webkit&amp;gt;gclient sync
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<p>##Sync Code##</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    $node-webkit&gt;gclient sync
+</code></pre></div></div>
 
-&lt;h2 id=&quot;build&quot;&gt;Build&lt;/h2&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    $ninja -C out/Release_x64 nw -j16
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+<p>##Build##</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    $ninja -C out/Release_x64 nw -j16
+</code></pre></div></div>
 
-&lt;h2 id=&quot;clean-code&quot;&gt;Clean code&lt;/h2&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    $ninja -C out/Release_x64 -t clean
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;</content><summary>Install depot_tools :
+<p>##Clean code##</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    $ninja -C out/Release_x64 -t clean
+</code></pre></div></div>]]></content><author><name></name></author><summary type="html"><![CDATA[##Install depot_tools : ## Download code]]></summary></entry><entry><title type="html">Life cycle of Video element in chromium(m41)</title><link href="http://abhijeetk.github.io/Video-rendering-in-chromium(Sequence-diagram)/" rel="alternate" type="text/html" title="Life cycle of Video element in chromium(m41)" /><published>2016-02-06T00:00:00+05:30</published><updated>2016-02-06T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Video-rendering-in-chromium(Sequence-diagram)</id><content type="html" xml:base="http://abhijeetk.github.io/Video-rendering-in-chromium(Sequence-diagram)/"><![CDATA[<h2 id="life-cycle-of-video-element">Life cycle of Video element:</h2>
 
-  Download code</summary></entry><entry><title>Building ffmpeg and ffplay on Windows7 64 bit</title><link href="http://abhijeetk.github.io/Building-ffmpeg-and-ffplay-on-Windows7-64-bit/" rel="alternate" type="text/html" title="Building ffmpeg and ffplay on Windows7 64 bit" /><published>2016-02-07T00:00:00+05:30</published><updated>2016-02-07T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Building ffmpeg and ffplay on Windows7 64 bit</id><content type="html" xml:base="http://abhijeetk.github.io/Building-ffmpeg-and-ffplay-on-Windows7-64-bit/">&lt;h2 id=&quot;prerequisite-for-ffmpeg&quot;&gt;Prerequisite for ffmpeg&lt;/h2&gt;
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;Install Msys64 on yourmachine. (msys2-x86_64-20150916.exe)&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Open VS2013 x64 Native Tools Command Prompt
-C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\Shortcuts&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Run C:/msys64/mingw64_shell.bat in VS2013 x64 Native Tools Command Prompt&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Check current compiler : It should be pointing to VS2013 compiler&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Check current linker, if it is referring to /usr/bin/link then we have to change it by renaming link.exe. Rename C:\msys64\usr\bin\link.exe to C:\msys64\usr\bin \link_old.exe&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;YASM : Download YASM from http://www.tortall.net/projects/yasm/releases/yasm-1.3.0-win64.exe
-    &lt;ul&gt;
-      &lt;li&gt;Rename yasm-1.3.0-win64.exe to yasm.exe&lt;/li&gt;
-      &lt;li&gt;Place yasm.exe somewhere in your PATH environment variable or Add it to C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;Make sure to use mingw64_shell.bat to have the correct MinGW-w64 environment. Run following commands in MinGW-w64 to install dependencies.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;c&quot;&gt;#normal msys2 packages&lt;/span&gt;
-    pacman -S make pkgconfdiffutils
-    &lt;span class=&quot;c&quot;&gt;# mingw-w64 packages and toolchains&lt;/span&gt;
-    pacman -S mingw-w64-x86_64-yasm mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;h2 id=&quot;download-ffmpeg-code&quot;&gt;Download ffmpeg code&lt;/h2&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    mkdir ffmpeg
-    &lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;ffmpeg
-    git clone https://github.com/FFmpeg/FFmpeg.git
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;h2 id=&quot;build-instructions-for-ffmpeg&quot;&gt;Build instructions for ffmpeg&lt;/h2&gt;
-&lt;p&gt;Ffmpeg can be built directly using following commands. If you wish to compile shared libraries, add –enable-shared to your configure options.&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    ./configure --toolchain&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;msvc
-    make
-    make install
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;h2 id=&quot;build-instructions-for-ffplay&quot;&gt;Build instructions for ffplay&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Download SDL from http://www.libsdl.org/release/SDL-devel-1.2.15-VC.zip&lt;/li&gt;
-  &lt;li&gt;Extract it and copy
-    &lt;ul&gt;
-      &lt;li&gt;SDL-devel-1.2.15-VC\SDL-1.2.15\include*.*  to C:\msys64\mingw64\include\SDL
-        &lt;ul&gt;
-          &lt;li&gt;Click -&amp;gt; Copy and Replace&lt;/li&gt;
-        &lt;/ul&gt;
-      &lt;/li&gt;
-      &lt;li&gt;SDL-devel-1.2.15-VC\SDL-1.2.15\lib\x64 to
-C:\msys64\mingw64\lib&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;Open file C:\msys64\mingw64\bin\sdl-config and modify following lines&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;        --libs&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -L&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;exec_prefix&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;/lib -lSDLmain -lSDL
-        ;;
-      --static-libs&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;c&quot;&gt;#    --libs|--static-libs)&lt;/span&gt;
-  &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -L&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;exec_prefix&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;/lib -lSDLmain -lSDL
-        ;;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Run following commands :&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;./configure --enable-ffplay --toolchain&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;msvc --disable-shared --enable-static --enable-sdl --extra-ldflags&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;-Wl,-add-stdcall-alias&quot;&lt;/span&gt; --enable-memalign-hack --disable-ffmpeg --pkg-config&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;sdl-config
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;</content><summary>Prerequisite for ffmpeg
-
-  Install Msys64 on yourmachine. (msys2-x86_64-20150916.exe)</summary></entry><entry><title>Video element rendering in chromium nwjs</title><link href="http://abhijeetk.github.io/Video-rendering-in-chromium-nwjs/" rel="alternate" type="text/html" title="Video element rendering in chromium nwjs" /><published>2016-02-06T00:00:00+05:30</published><updated>2016-02-06T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Video-rendering-in-chromium-nwjs</id><content type="html" xml:base="http://abhijeetk.github.io/Video-rendering-in-chromium-nwjs/">&lt;h2 id=&quot;video-rendering-in-chromiumnwjs&quot;&gt;Video rendering in chromium/nwjs:&lt;/h2&gt;
-
-&lt;p&gt;There are three major components to Chromium’s video implementation:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;Pipeline&lt;/strong&gt;
-    &lt;ul&gt;
-      &lt;li&gt;Chromium’s implementation of a media playback engine&lt;/li&gt;
-      &lt;li&gt;Handles asynchronous operations like audio/video demuxing decoding, synchronization and resource fetching&lt;/li&gt;
-      &lt;li&gt;Pipeline works like a state machine to perform asynchronous initialization, pausing, seeking and playing.&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;FFmpeg&lt;/strong&gt;
-    &lt;ul&gt;
-      &lt;li&gt;Open source library used for Demuxing(container format parsing) and audio/video decoding&lt;/li&gt;
-      &lt;li&gt;implements parallel frame-level decoding for many popular codecs.&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;WebKit&lt;/strong&gt;
-    &lt;ul&gt;
-      &lt;li&gt;Implements the HTML and Javascript bindings ( to communicate with video element using javascript)&lt;/li&gt;
-      &lt;li&gt;Handles rendering the user agent controls (Creation of media player UI)&lt;/li&gt;
-      &lt;li&gt;Provides WebMediaPlayer interface for port-specific implementations of a media playback engine&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3 id=&quot;pipeline&quot;&gt;Pipeline:&lt;/h3&gt;
-
-&lt;p&gt;The pipeline is a pull-based media playback engine that abstracts each step of media playback into 6 different filters.&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;1. data source
-2. demuxing 
-3. audio decoding
-4. video decoding 
-5. audio rendering
-6. video rendering 
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;The pipeline manages the lifetime of the filters and exposes a simple thread-safe interface to clients.  The filters are connected together to form a filter graph. All 6 filters are running in different thread to provide responsive media playback in browser. Caching of data is implemented at each filter level.
-Pipeline is completely pull-based and relies on the system clock (vsync) to drive playback.  As the system clock requests additional data, the video renderer requests decoded video data from the video decoder, which requests encoded buffers from the demuxer, which reads from the data source, and so on.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;&lt;em&gt;State machine of pipeline:&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/Video-rendering-in-chromium-nwjs/state_machine.png&quot; alt=&quot;alt text&quot; title=&quot;Video element rendering in chromium nwjs&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Working of filters in pipeline&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/Video-rendering-in-chromium-nwjs/image002.png&quot; alt=&quot;alt text&quot; title=&quot;Video element rendering in chromium nwjs&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Caching of data is implemented at each filter level.&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/Video-rendering-in-chromium-nwjs/image004.png&quot; alt=&quot;alt text&quot; title=&quot;Video element rendering in chromium nwjs&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Pipeline and ffmpeg&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/Video-rendering-in-chromium-nwjs/image005.png&quot; alt=&quot;alt text&quot; title=&quot;Video element rendering in chromium nwjs&quot; /&gt;&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;strong&gt;Following are filters names and their respective implementation in chromium code.&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Data source	&lt;strong&gt;BufferedDataSource&lt;/strong&gt;
-    &lt;ul&gt;
-      &lt;li&gt;A data source capable of loading URLs and buffering the data using an in-memory sliding window.&lt;/li&gt;
-      &lt;li&gt;This class ask network layer to fetch data.&lt;/li&gt;
-      &lt;li&gt;BufferedDataSource::intermediate_read_buffer_ variable stores data downloaded from network.&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;Demuxing	&lt;strong&gt;FFmpegDemuxer/FFmpegDemuxerStream/DemuxerStream&lt;/strong&gt;
-    &lt;ul&gt;
-      &lt;li&gt;Demuxer initialises ffmpeg using FFmpegGlue class.&lt;/li&gt;
-      &lt;li&gt;Demuxer use buffers downloaded by data source and     attempt to recognize the container by looking at the first few bytes&lt;/li&gt;
-      &lt;li&gt;Demuxer determines number of streams , type of streams(audio/video) and check whether
- video/audio codec configuration supported&lt;/li&gt;
-      &lt;li&gt;Create audio/video ffmegDemuxerStream and put ffmpeg::AVStream in it.&lt;/li&gt;
-      &lt;li&gt;DemuxerStream and a list of Decoders and provides decoded output to Audio/VideoRendererImpl&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;Audio Decoder	&lt;strong&gt;FFmpegAudioDecoder&lt;/strong&gt;
-    &lt;ul&gt;
-      &lt;li&gt;FFmpegAudioDecoder is wrapper over audio actual decoders provided by ffmpeg.&lt;/li&gt;
-      &lt;li&gt;On the basis of audio codec information we determine using demuxer, FFmpegAudioDecoder initialise respective ffmpeg decoder.&lt;/li&gt;
-      &lt;li&gt;FFmpegAudioDecoder ask ffmpeg to decode frames present inside encoded ffmpegDemuxerStreams::AudioStreams.&lt;/li&gt;
-      &lt;li&gt;Decoded frames generated by FFmpegAudioDecoder are consumed by AudioRendererImpl.&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;Video Decoder	&lt;strong&gt;FFmpegVideoDecoder&lt;/strong&gt;
-    &lt;ul&gt;
-      &lt;li&gt;FFmpegVideoDecoder is wrapper over actual video decoders provided by ffmpeg.&lt;/li&gt;
-      &lt;li&gt;On the basis of video codec information we determine using demuxer, FFmpegVideoDecoder initialise respective ffmpeg decoder.&lt;/li&gt;
-      &lt;li&gt;FFmpegVideoDecoder ask ffmpeg to decode frames present inside encoded ffmpegDemuxerStreams::VideoStreams.&lt;/li&gt;
-      &lt;li&gt;FFmpegVideoDecoder allocates memory for decoded data.(CPU and GPU based on SW/HW decoder)&lt;/li&gt;
-      &lt;li&gt;Decoded frames(videoFrame) generated by FFmpegVideoDecoder are consumed by VideoRendererImpl.&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;Audio Rendering	&lt;strong&gt;AudioRendererImpl&lt;/strong&gt;
-    &lt;ul&gt;
-      &lt;li&gt;It is responsible for initialization of audio decoder.&lt;/li&gt;
-      &lt;li&gt;AudioRendererImpl talks to an AudioRendererAlgorithm that takes care of queueing audio data and stretching/shrinking audio data.&lt;/li&gt;
-      &lt;li&gt;It will provide decode audio frames to sound card.
-  Video Rendering	VideoRendererImpl&lt;/li&gt;
-      &lt;li&gt;It is responsible for initialization of video decoder.&lt;/li&gt;
-      &lt;li&gt;VideoRendererImpl creates its own thread for the sole purpose of timing frame presentation.&lt;/li&gt;
-      &lt;li&gt;It handles reading from the VideoFrameStream and stores the results in a queue of decoded frames and executing a callback to notify compositing/painting when a frame is ready for rendering.&lt;/li&gt;
-      &lt;li&gt;ready_outputs_ : variable stores decoded data&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;strong&gt;Other important classes:&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;WebMediaPlayerImpl&lt;/strong&gt;
-    &lt;ul&gt;
-      &lt;li&gt;Runs in three thread:
-        &lt;ul&gt;
-          &lt;li&gt;Media Thread&lt;/li&gt;
-          &lt;li&gt;Renderer Thread&lt;/li&gt;
-          &lt;li&gt;Compositor thread.&lt;/li&gt;
-        &lt;/ul&gt;
-      &lt;/li&gt;
-      &lt;li&gt;The canonical implementation of blink::WebMediaPlayer that’s backed by Pipeline.&lt;/li&gt;
-      &lt;li&gt;Handles normal resource loading, Media Source, and Encrypted Media.&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;FFmpegURLProtocol&lt;/strong&gt;
-  It maintain state of your seek and read position while interacting with network using bufferDataSource.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;DecoderBufferQueue&lt;/strong&gt;
-  Maintains a queue of DecoderBuffers in increasing timestamp order.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;strong&gt;Chromium-ffmpeg implementation known facts:&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Wrappers written by chromium to make playback responsive are tightly couple with ffmpeg. (They are written considering ffmpeg as underlying media framework and they are not generic)&lt;/li&gt;
-  &lt;li&gt;FFmpeg works on buffers provided by networks(bufferDataSource)&lt;/li&gt;
-  &lt;li&gt;FFmpeg can be decomposed to run in threaded implementation for demuxing, decoding and rendering.&lt;/li&gt;
-  &lt;li&gt;Caching of data is implemented at each filter level.&lt;/li&gt;
-  &lt;li&gt;HTML Media Elements like audio, video and Web audio are depends on chromium-ffmpeg integration. This Media elements uses underlying playback engine (pipeline) and media framework (Ffmpeg).&lt;/li&gt;
-  &lt;li&gt;Ffmpeg supports almost all pixel format but Chromium pipeline supports only famous pixel formats.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;strong&gt;References:&lt;/strong&gt;
-	- https://www.chromium.org/developers/design-documents/video&lt;/p&gt;</content><summary>Video rendering in chromium/nwjs:</summary></entry><entry><title>Life cycle of Video element in chromium(m41)</title><link href="http://abhijeetk.github.io/Video-rendering-in-chromium(Sequence-diagram)/" rel="alternate" type="text/html" title="Life cycle of Video element in chromium(m41)" /><published>2016-02-06T00:00:00+05:30</published><updated>2016-02-06T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Video-rendering-in-chromium(Sequence-diagram)</id><content type="html" xml:base="http://abhijeetk.github.io/Video-rendering-in-chromium(Sequence-diagram)/">&lt;h2 id=&quot;life-cycle-of-video-element&quot;&gt;Life cycle of Video element:&lt;/h2&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/video_rendering_sequence_diagram/image00001.jpeg&quot; alt=&quot;Sequence diagram for Life cycle of Video element in chromium(m41)&quot; title=&quot;Life cycle of Video element in chromium(m41)&quot; /&gt;&lt;/p&gt;</content><summary>Life cycle of Video element:</summary></entry></feed>
+<p><img src="/images/video_rendering_sequence_diagram/image00001.jpeg" alt="Sequence diagram for Life cycle of Video element in chromium(m41)" title="Life cycle of Video element in chromium(m41)" /></p>]]></content><author><name></name></author><summary type="html"><![CDATA[Life cycle of Video element:]]></summary></entry></feed>
