@@ -89,7 +89,8 @@
   </tbody>
 </table>
 
-<p>From the above table, the difference in filesystem was the first suspect. Squashfs is a compressed read-only file system for Linux.</p>
+<p>You can learn more about LaCrOS in my previous <a href="https://abhijeetk.github.io/What-is-LaCrOS/">blog</a>.
+From the above table, the difference in filesystem was the first suspect. Squashfs is a compressed read-only file system for Linux.</p>
 
 <p>To emulate the first launch, all caches are cleared using drop_caches as below.
 <code class="language-plaintext highlighter-rouge">echo 3 &gt; /proc/sys/vm/drop_caches</code></p>
