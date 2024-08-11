@@ -1,4 +1,104 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.1">Jekyll</generator><link href="http://abhijeetk.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="http://abhijeetk.github.io/" rel="alternate" type="text/html" /><updated>2022-11-02T20:37:33+05:30</updated><id>http://abhijeetk.github.io/feed.xml</id><title type="html">Abhijeet Kandalkar</title><subtitle>Software Engineer @ Igalia | C++ developer | Open Source contributor in Webkit/Chromium</subtitle><entry><title type="html">Improving disk read performance</title><link href="http://abhijeetk.github.io/improving-disk-read-performance/" rel="alternate" type="text/html" title="Improving disk read performance" /><published>2022-11-02T00:00:00+05:30</published><updated>2022-11-02T00:00:00+05:30</updated><id>http://abhijeetk.github.io/improving-disk-read-performance</id><content type="html" xml:base="http://abhijeetk.github.io/improving-disk-read-performance/"><![CDATA[<p>When I started working on analyzing the startup time of a browser, I didn’t have an idea where to start. For me, Performance was a number game and trial-n-error approach. The challenge I was looking into is described in bug <a href="https://bugs.chromium.org/p/chromium/issues/detail?id=1270977">1270977</a>, in which the chrome binary hosted on two different partitions behaved differently.</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2024-08-11T17:28:43+05:30</updated><id>http://localhost:4000/feed.xml</id><title type="html">Abhijeet Kandalkar</title><subtitle>Software Engineer @ Igalia | C++ developer | Open Source contributor in Webkit/Chromium</subtitle><entry><title type="html">Exploring sandboxing in CEF and CEFSharp for Windows platform</title><link href="http://localhost:4000/Exploring-sandboxing-in-CEF-and-CEFSharp/" rel="alternate" type="text/html" title="Exploring sandboxing in CEF and CEFSharp for Windows platform" /><published>2024-08-11T00:00:00+05:30</published><updated>2024-08-11T00:00:00+05:30</updated><id>http://localhost:4000/Exploring-sandboxing-in-CEF-and-CEFSharp</id><content type="html" xml:base="http://localhost:4000/Exploring-sandboxing-in-CEF-and-CEFSharp/"><![CDATA[<p>Sandboxing is a critical feature for ensuring the security and stability of applications that embed web content. In this blog, we will delve into how sandboxing is achieved in the Chromium Embedded Framework (<a href="https://bitbucket.org/chromiumembedded/cef/src/master/">CEF</a>). All analysis in this blog is performed on Windows operating system.</p>
+
+<h3 id="cefclient-and-cefsharp">CEFClient and CEFSharp</h3>
+<p>The base CEF framework includes support for the C and C++ programming languages. Also it provides a test applications to demonstrate its functionality. <a href="https://bitbucket.org/chromiumembedded/cef/src/master/tests/cefclient/">CEFClient</a>, a one of the C++ test application, serves this purpose.</p>
+
+<p>CEF provides CAPI bindings to enable application development across various programming languages. For integrating the CEF framework with .NET, you should explore <a href="https://github.com/cefsharp/CefSharp">CEFSharp</a>. It is a C# application that leverages the CEF open source project, allowing developers to create applications in C#.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>CEFSharp(C#)
+            \  CAPI 
+              -------&gt; CEF(C++) ------&gt; Chromium(C++)
+            /
+CEFClient(C++)
+</code></pre></div></div>
+<hr />
+
+<h3 id="what-is-the-sandbox">What is the sandbox?</h3>
+<p>As mentioned in <a href="https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox_faq.md#what-is-the-sandbox">documentation</a> of sandbox in Chromium repository,</p>
+<blockquote>
+  <h2 id="the-sandbox-is-a-c-library-that-allows-the-creation-of-sandboxed-processes--processes-that-execute-within-a-very-restrictive-environment-the-only-resources-sandboxed-processes-can-freely-use-are-cpu-cycles-and-memory-for-example-sandboxes-processes-cannot-write-to-disk-or-display-their-own-windows-what-exactly-they-can-do-is-controlled-by-an-explicit-policy-chromium-renderers-are-sandboxed-processes">The sandbox is a C++ library that allows the creation of sandboxed processes — processes that execute within a very restrictive environment. The only resources sandboxed processes can freely use are CPU cycles and memory. For example, sandboxes processes cannot write to disk or display their own windows. What exactly they can do is controlled by an explicit policy. Chromium renderers are sandboxed processes.</h2>
+</blockquote>
+
+<h3 id="understanding-sandboxing-in-cef">Understanding Sandboxing in CEF</h3>
+
+<p>Since CEF uses Chromium internally, we decided to investigate how sandboxing is implemented by examining Chromium’s source code. Our findings revealed that the sandbox is designed to be versatile, with no hard dependencies on the Chromium browser itself, making it usable with other applications.</p>
+
+<p>CEF prepares a static <a href="https://bitbucket.org/chromiumembedded/cef/src/69b884d39cbcb6497187a65d1fac6782ef823040/BUILD.gn#lines-1181">library</a> using the existing <a href="https://source.chromium.org/chromium/chromium/src/+/main:sandbox/win/src/">sandbox</a> implementation in the Chromium repository and links it to the main application. This process enables the sandbox functionality in CEF applications. For more detailed information, refer to the <a href="https://bitbucket.org/chromiumembedded/cef/src/master/libcef_dll/sandbox/sandbox_win.cc">sandbox_win.cc</a> file in the CEF repository.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>if (is_win) {
+  static_library("cef_sandbox") {
+    sources = [ "libcef_dll/sandbox/sandbox_win.cc" ]
+    include_dirs = [ "." ]
+    deps = [ "libcef/features", "//sandbox" ]
+  }
+}
+</code></pre></div></div>
+
+<hr />
+
+<h3 id="implementing-sandboxing-in-cefclient">Implementing Sandboxing in CEFClient</h3>
+
+<p>CEFClient achieves a sandboxing by linking to cef_sandbox library</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  executable("cefclient") {
+      deps += [
+        ":cef_sandbox",
+      ]
+</code></pre></div></div>
+
+<p>In the CEFClient application, we need to create a sandbox object and pass it to CEF, which then forwards it internally to Chromium to configure the sandbox.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  CefScopedSandboxInfo scoped_sandbox;
+  sandbox_info = scoped_sandbox.sandbox_info();
+  ...
+  // Initialize the CEF browser process.
+  if (!context-&gt;Initialize(main_args, settings, app, sandbox_info)) {
+    return 1;
+  }
+</code></pre></div></div>
+
+<p>The following call stack illustrates how CEFClient code calls into CEF, ultimately transitioning into the Chromium environment to configure the sandbox.</p>
+
+<p><img src="https://notes.igalia.com/uploads/bd290d80-d51f-4772-8e24-dc57ee73ba47.png" alt="" /></p>
+
+<p>The CEF test application (CEFClient) successfully launches a sandboxed CEF, which is verified by loading the <code class="language-plaintext highlighter-rouge">chrome://sandbox</code> URL.</p>
+
+<p><img src="https://notes.igalia.com/uploads/cb0b3336-4af7-49b1-82ed-2e1abccc2e38.png" alt="" /></p>
+
+<hr />
+
+<h3 id="why-c-applications-cannot-use-sandboxed-cef-">Why C# Applications Cannot Use Sandboxed CEF ?</h3>
+
+<p>As we have seen above, for C++ applications it is possible to use sandboxing but C# application can not use sandboxed CEF. But why ?</p>
+
+<p>To achieve effective sandboxing in your CEF application, ensure that you link the <code class="language-plaintext highlighter-rouge">cef_sandbox.lib</code> static library. This linking must be done specifically to the main process of the application. While C++ applications can directly link static libraries without issue, C# applications do not support static linking of libraries.</p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">Static library means that the library is going to be merged with application. This concept doesn't exist in .NET as .NET supports only dynamic link libraries</code></p>
+</blockquote>
+
+<p>If you attempt to create a DLL for the cef_sandbox code and link it dynamically to your application, the Chromium sandbox code will detect this and fail with the error <a href="https://source.chromium.org/chromium/chromium/src/+/main:sandbox/win/src/sandbox_types.h;l=154?q=SBOX_ERROR_INVALID_LINK_STATE">SBOX_ERROR_INVALID_LINK_STATE</a>. Therefore, static linking of the sandboxing code to the main application is mandatory for sandbox functionality.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  // Attempt to start a sandboxed process from sandbox code hosted not within
+  // the main EXE. This is an unsupported operation by the sandbox.
+  SBOX_ERROR_INVALID_LINK_STATE = 64,
+</code></pre></div></div>
+<hr />
+<h3 id="conclusion">Conclusion</h3>
+<p>While sandboxing is a powerful feature available for C++ applications using CEF, it is not feasible for C# applications due to the inherent differences in how these languages operate within the system. The managed environment of C# introduces limitations that make it impossible to integrate the same level of sandboxing as in C++. Consequently, C# applications cannot leverage sandboxed CEF using the existing setup.</p>
+
+<hr />
+<h3 id="future-study">Future study</h3>
+<p>To enable sandboxing in C# applications, we may need to modify the .NET <a href="https://github.com/.NET/runtime">runtime</a> (which is written in C++) to support sandboxing. This would involve linking the cef_sandbox library directly to the runtime. The .NET Core runtime includes several executables/libraries that act as the main entry point for code execution, typically referred to as the “<a href="https://github.com/.NET/runtime/blob/main/docs/design/features/host-components.md">host</a>”. These host executables can be customized as needed.</p>
+
+<p>For example, when you run the apphost executable, it initializes the .NET Core runtime and starts your application. Creating a sandbox object in the apphost and passing it to the application might help address sandboxing for C# applications. However, this approach has not been tested, so its effectiveness cannot be confirmed without further exploration and modification of the C# language runtime.</p>
+
+<hr />
+
+<p><strong>References</strong></p>
+<ul>
+  <li><a href="https://stackoverflow.com/questions/1590337/using-the-google-chrome-sandbox">https://stackoverflow.com/questions/1590337/using-the-google-chrome-sandbox</a></li>
+  <li><a href="https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md">https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md</a></li>
+  <li><a href="https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox_faq.md">https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox_faq.md</a></li>
+</ul>]]></content><author><name></name></author><summary type="html"><![CDATA[Sandboxing is a critical feature for ensuring the security and stability of applications that embed web content. In this blog, we will delve into how sandboxing is achieved in the Chromium Embedded Framework (CEF). All analysis in this blog is performed on Windows operating system.]]></summary></entry><entry><title type="html">Improving disk read performance</title><link href="http://localhost:4000/improving-disk-read-performance/" rel="alternate" type="text/html" title="Improving disk read performance" /><published>2022-11-02T00:00:00+05:30</published><updated>2022-11-02T00:00:00+05:30</updated><id>http://localhost:4000/improving-disk-read-performance</id><content type="html" xml:base="http://localhost:4000/improving-disk-read-performance/"><![CDATA[<p>When I started working on analyzing the startup time of a browser, I didn’t have an idea where to start. For me, Performance was a number game and trial-n-error approach. The challenge I was looking into is described in bug <a href="https://bugs.chromium.org/p/chromium/issues/detail?id=1270977">1270977</a>, in which the chrome binary hosted on two different partitions behaved differently.</p>
 
 <table>
   <thead>
@@ -392,7 +492,7 @@ We can use hardware implementation of the above algorithms to speed up things.</
 
 <p><img src="https://notes.igalia.com/uploads/b0a8e7e7-8d1a-48bf-a295-060206faa5c0.png" alt="" /></p>
 
-<p>Your first step should be to identify your current stack and then analyze each layer of your file system stack using the available tools and optimize them. The information provided in this blog may be helpful to you in deciding what to do about your own performance issues. You can get it touch with <a href="abhijeet@igalia.com">me</a> if you need any help.</p>]]></content><author><name></name></author><summary type="html"><![CDATA[When I started working on analyzing the startup time of a browser, I didn’t have an idea where to start. For me, Performance was a number game and trial-n-error approach. The challenge I was looking into is described in bug 1270977, in which the chrome binary hosted on two different partitions behaved differently.]]></summary></entry><entry><title type="html">Introduction to LaCrOS</title><link href="http://abhijeetk.github.io/What-is-LaCrOS/" rel="alternate" type="text/html" title="Introduction to LaCrOS" /><published>2021-01-03T00:00:00+05:30</published><updated>2021-01-03T00:00:00+05:30</updated><id>http://abhijeetk.github.io/What-is-LaCrOS</id><content type="html" xml:base="http://abhijeetk.github.io/What-is-LaCrOS/"><![CDATA[<p>Happy new year to All !!!</p>
+<p>Your first step should be to identify your current stack and then analyze each layer of your file system stack using the available tools and optimize them. The information provided in this blog may be helpful to you in deciding what to do about your own performance issues. You can get it touch with <a href="abhijeet@igalia.com">me</a> if you need any help.</p>]]></content><author><name></name></author><summary type="html"><![CDATA[When I started working on analyzing the startup time of a browser, I didn’t have an idea where to start. For me, Performance was a number game and trial-n-error approach. The challenge I was looking into is described in bug 1270977, in which the chrome binary hosted on two different partitions behaved differently.]]></summary></entry><entry><title type="html">Introduction to LaCrOS</title><link href="http://localhost:4000/What-is-LaCrOS/" rel="alternate" type="text/html" title="Introduction to LaCrOS" /><published>2021-01-03T00:00:00+05:30</published><updated>2021-01-03T00:00:00+05:30</updated><id>http://localhost:4000/What-is-LaCrOS</id><content type="html" xml:base="http://localhost:4000/What-is-LaCrOS/"><![CDATA[<p>Happy new year to All !!!</p>
 
 <p>Igalia has been collaborating with Google on the LaCrOS project for over a year and has presented updates of the LaCrOS project in the last two BlinkOns.</p>
 
@@ -557,7 +657,7 @@ See the working of the Multi-Desk in LaCrOS in the video below.</li>
 This feature adds a new tab bar to the browser, featuring page thumbnail previews and a touch friendly UI. My colleague <a href="mailto:tonikitoo@igalia.com">Antonio</a> has contributed to an implementation of this feature.</li>
 </ul>
 
-<p>Last but not least, our Chromium team is also working in parallel on fixing several window manager integration issues as part of this work, so please stay tuned for more updates on our efforts related to LaCrOS development :)</p>]]></content><author><name></name></author><summary type="html"><![CDATA[Happy new year to All !!!]]></summary></entry><entry><title type="html">Up and running WebChimera with nwjs</title><link href="http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-Win/" rel="alternate" type="text/html" title="Up and running WebChimera with nwjs" /><published>2016-11-11T00:00:00+05:30</published><updated>2016-11-11T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-Win</id><content type="html" xml:base="http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-Win/"><![CDATA[<ul>
+<p>Last but not least, our Chromium team is also working in parallel on fixing several window manager integration issues as part of this work, so please stay tuned for more updates on our efforts related to LaCrOS development :)</p>]]></content><author><name></name></author><summary type="html"><![CDATA[Happy new year to All !!!]]></summary></entry><entry><title type="html">Up and running WebChimera with nwjs</title><link href="http://localhost:4000/Up-and-running-WebChimera-with-nwjs-Win/" rel="alternate" type="text/html" title="Up and running WebChimera with nwjs" /><published>2016-11-11T00:00:00+05:30</published><updated>2016-11-11T00:00:00+05:30</updated><id>http://localhost:4000/Up-and-running-WebChimera-with-nwjs-Win</id><content type="html" xml:base="http://localhost:4000/Up-and-running-WebChimera-with-nwjs-Win/"><![CDATA[<ul>
   <li>
     <h3 id="add-proxy-to-windows-environment">Add proxy to windows environment</h3>
   </li>
@@ -630,7 +730,7 @@ build_nwjs.cmd
 <div class="language-diff highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">run_nwjs.cmd
 </span></code></pre></div></div>
 
-<p><img src="/images/Up-and-running-WebChimera-with-nwjs-win/nw-wcjs-win.png" alt="alt text" title="Up and running WebChimera with nwjs" /></p>]]></content><author><name></name></author><summary type="html"><![CDATA[Add proxy to windows environment]]></summary></entry><entry><title type="html">Up and running WebChimera with nwjs Ubuntu</title><link href="http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-ubuntu/" rel="alternate" type="text/html" title="Up and running WebChimera with nwjs Ubuntu" /><published>2016-11-11T00:00:00+05:30</published><updated>2016-11-11T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-ubuntu</id><content type="html" xml:base="http://abhijeetk.github.io/Up-and-running-WebChimera-with-nwjs-ubuntu/"><![CDATA[<ul>
+<p><img src="/images/Up-and-running-WebChimera-with-nwjs-win/nw-wcjs-win.png" alt="alt text" title="Up and running WebChimera with nwjs" /></p>]]></content><author><name></name></author><summary type="html"><![CDATA[Add proxy to windows environment]]></summary></entry><entry><title type="html">Up and running WebChimera with nwjs Ubuntu</title><link href="http://localhost:4000/Up-and-running-WebChimera-with-nwjs-ubuntu/" rel="alternate" type="text/html" title="Up and running WebChimera with nwjs Ubuntu" /><published>2016-11-11T00:00:00+05:30</published><updated>2016-11-11T00:00:00+05:30</updated><id>http://localhost:4000/Up-and-running-WebChimera-with-nwjs-ubuntu</id><content type="html" xml:base="http://localhost:4000/Up-and-running-WebChimera-with-nwjs-ubuntu/"><![CDATA[<ul>
   <li>
     <h3 id="add-proxy-to-bashrc">Add proxy to ~/.bashrc</h3>
   </li>
@@ -700,7 +800,7 @@ gedit index.html (Edit it to add http or https URL for video)
 </span>./run_nwjs.sh
 </code></pre></div></div>
 
-<p><img src="/images/Up-and-running-WebChimera-with-nwjs-ubuntu/WebChimera.png" alt="alt text" title="Up and running WebChimera with nwjs Ubuntu" /></p>]]></content><author><name></name></author><summary type="html"><![CDATA[Add proxy to ~/.bashrc]]></summary></entry><entry><title type="html">Up and running webassembly in browser</title><link href="http://abhijeetk.github.io/Up-and-running-webassembly/" rel="alternate" type="text/html" title="Up and running webassembly in browser" /><published>2016-10-10T00:00:00+05:30</published><updated>2016-10-10T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Up-and-running-webassembly</id><content type="html" xml:base="http://abhijeetk.github.io/Up-and-running-webassembly/"><![CDATA[<h2 id="asm-to-webassembly">ASM to WebAssembly</h2>
+<p><img src="/images/Up-and-running-WebChimera-with-nwjs-ubuntu/WebChimera.png" alt="alt text" title="Up and running WebChimera with nwjs Ubuntu" /></p>]]></content><author><name></name></author><summary type="html"><![CDATA[Add proxy to ~/.bashrc]]></summary></entry><entry><title type="html">Up and running webassembly in browser</title><link href="http://localhost:4000/Up-and-running-webassembly/" rel="alternate" type="text/html" title="Up and running webassembly in browser" /><published>2016-10-10T00:00:00+05:30</published><updated>2016-10-10T00:00:00+05:30</updated><id>http://localhost:4000/Up-and-running-webassembly</id><content type="html" xml:base="http://localhost:4000/Up-and-running-webassembly/"><![CDATA[<h2 id="asm-to-webassembly">ASM to WebAssembly</h2>
 
 <ul>
   <li>
@@ -835,7 +935,7 @@ console.log<span class="o">(</span>myMathModule.exports.doubleExp<span class="o"
 
 <p><a href="http://cultureofdevelopment.com/blog/build-your-first-thing-with-web-assembly/">http://cultureofdevelopment.com/blog/build-your-first-thing-with-web-assembly/</a>
 <a href="https://github.com/WebAssembly/design/blob/master/JS.md">https://github.com/WebAssembly/design/blob/master/JS.md</a>
-<a href="https://github.com/brakmic/brakmic/blob/master/webassembly/COMPILING_WIN32.md">https://github.com/brakmic/brakmic/blob/master/webassembly/COMPILING_WIN32.md</a></p>]]></content><author><name></name></author><summary type="html"><![CDATA[ASM to WebAssembly]]></summary></entry><entry><title type="html">Up and running ASM.js in browser</title><link href="http://abhijeetk.github.io/Up-and-running-ASMjs/" rel="alternate" type="text/html" title="Up and running ASM.js in browser" /><published>2016-07-10T00:00:00+05:30</published><updated>2016-07-10T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Up-and-running-ASMjs</id><content type="html" xml:base="http://abhijeetk.github.io/Up-and-running-ASMjs/"><![CDATA[<ul>
+<a href="https://github.com/brakmic/brakmic/blob/master/webassembly/COMPILING_WIN32.md">https://github.com/brakmic/brakmic/blob/master/webassembly/COMPILING_WIN32.md</a></p>]]></content><author><name></name></author><summary type="html"><![CDATA[ASM to WebAssembly]]></summary></entry><entry><title type="html">Up and running ASM.js in browser</title><link href="http://localhost:4000/Up-and-running-ASMjs/" rel="alternate" type="text/html" title="Up and running ASM.js in browser" /><published>2016-07-10T00:00:00+05:30</published><updated>2016-07-10T00:00:00+05:30</updated><id>http://localhost:4000/Up-and-running-ASMjs</id><content type="html" xml:base="http://localhost:4000/Up-and-running-ASMjs/"><![CDATA[<ul>
   <li>
     <h3 id="install-emscripten-sdk">Install Emscripten SDK</h3>
     <p>Download Emscripten SDK Offline Installer and install it. For more information about installation process refer <a href="https://kripken.github.io/emscripten-site/docs/getting_started/index.html">https://kripken.github.io/emscripten-site/docs/getting_started/index.html</a></p>
@@ -909,7 +1009,7 @@ int main<span class="o">()</span> <span class="o">{</span>
   <li>Open hello.html that with your browser, and you can see it as a web page.</li>
 </ul>
 
-<p><img src="/images/Up-and-running-ASM-js/emcc-in-browser.png" alt="alt text" title="Up and running ASM.js in browser" /></p>]]></content><author><name></name></author><summary type="html"><![CDATA[Install Emscripten SDK Download Emscripten SDK Offline Installer and install it. For more information about installation process refer https://kripken.github.io/emscripten-site/docs/getting_started/index.html]]></summary></entry><entry><title type="html">Building ffmpeg form nwjs/chromium repository</title><link href="http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository/" rel="alternate" type="text/html" title="Building ffmpeg form nwjs/chromium repository" /><published>2016-02-28T00:00:00+05:30</published><updated>2016-02-28T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository</id><content type="html" xml:base="http://abhijeetk.github.io/Building-ffmpeg-form-nwjs-or-chromium-repository/"><![CDATA[<ul>
+<p><img src="/images/Up-and-running-ASM-js/emcc-in-browser.png" alt="alt text" title="Up and running ASM.js in browser" /></p>]]></content><author><name></name></author><summary type="html"><![CDATA[Install Emscripten SDK Download Emscripten SDK Offline Installer and install it. For more information about installation process refer https://kripken.github.io/emscripten-site/docs/getting_started/index.html]]></summary></entry><entry><title type="html">Building ffmpeg form nwjs/chromium repository</title><link href="http://localhost:4000/Building-ffmpeg-form-nwjs-or-chromium-repository/" rel="alternate" type="text/html" title="Building ffmpeg form nwjs/chromium repository" /><published>2016-02-28T00:00:00+05:30</published><updated>2016-02-28T00:00:00+05:30</updated><id>http://localhost:4000/Building-ffmpeg-form-nwjs-or-chromium-repository</id><content type="html" xml:base="http://localhost:4000/Building-ffmpeg-form-nwjs-or-chromium-repository/"><![CDATA[<ul>
   <li>
     <p>Open VS2013 x64 Native Tools Command Prompt
 C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\Shortcuts</p>
@@ -1022,7 +1122,7 @@ Go to nwjs source code location :  /node-webkit/src</li>
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>src&gt;ninja <span class="nt">-C</span> out/Debug_x64 nw <span class="nt">-j16</span>
 </code></pre></div></div>
 
-<p><img src="/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image008.png" alt="alt text" title="Building ffmpeg form nwjs/chromium repository" /></p>]]></content><author><name></name></author><summary type="html"><![CDATA[Open VS2013 x64 Native Tools Command Prompt C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\Shortcuts Open C:\cygwin64\Cygwin.bat in VS2013 x64 Native Tools Command Prompt and make sure that compiler and linker are refering to VS2013 64 bit executables as shown below.[Assuming you have cygwin installed on your Windows machine] Set following environment variables set GYP_DEFINES=host_arch=x64 target_arch=x64 nwjs_sdk=1 disable_nacl=0 proprietary_codecs=1 branding=Chrome Go to Ffmpeg source code location : &lt;node-webkit-dir&gt;\src\third_party\ffmpeg [APPLY PATCH to file ] /chromium/scripts/build_ffmpeg.py Add support of mxf by enabling it as decoder, demuxer and parser - '--enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw', - '--enable-demuxer=ogg,matroska,wav', - '--enable-parser=opus,vp3,vorbis,vp8', + '--enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw,mxf', + '--enable-demuxer=ogg,matroska,wav,mxf', + '--enable-parser=opus,vp3,vorbis,vp8,mxf', [APPLY PATCH to file ] : /chromium/scripts/build_ffmpeg.py Add support of mxf by enabling it as decoder, demuxer and parser ['chromeos == 1', { 'ffmpeg_branding%': '&lt;(branding)OS', }, { # otherwise, assume Chrome/Chromium. - 'ffmpeg_branding%': '&lt;(branding)', + 'ffmpeg_branding%': 'Chrome', }], ], Build standalone ffmpeg code for windows 64 bit. Build will generate following directory build.x64.win folder. Copy config and from build.x64.win: ffmpeg_src&gt;./chromium/scripts/copy_config.sh Regenerate ffmpeg gyp files : ffmpeg_src&gt;python chromium/scripts/generate_gyp.py Following files get modified after running above commands: Force nwjs(chromium) to regenerate ninja files for modified *.h, *.asm, *.gypi (see previous step): Go to nwjs source code location : /node-webkit/src src&gt;gclientrunhook–force Build ffmpeg code using ninja to generate ffmpegsumo.dll: src&gt;ninja -C out/Debug_x64 ffmpegsumo-j16 Build nwjs code using ninja and link to ffmpegsumo.dll: src&gt;ninja -C out/Debug_x64 nw -j16]]></summary></entry><entry><title type="html">Building ffmpeg and ffplay on Windows7 64 bit</title><link href="http://abhijeetk.github.io/Building-ffmpeg-and-ffplay-on-Windows7-64-bit/" rel="alternate" type="text/html" title="Building ffmpeg and ffplay on Windows7 64 bit" /><published>2016-02-07T00:00:00+05:30</published><updated>2016-02-07T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Building%20ffmpeg%20and%20ffplay%20on%20Windows7%2064%20bit</id><content type="html" xml:base="http://abhijeetk.github.io/Building-ffmpeg-and-ffplay-on-Windows7-64-bit/"><![CDATA[<p>##Prerequisite for ffmpeg##</p>
+<p><img src="/images/Building-ffmpeg-form-nwjs-or-chromium-repository/image008.png" alt="alt text" title="Building ffmpeg form nwjs/chromium repository" /></p>]]></content><author><name></name></author><summary type="html"><![CDATA[Open VS2013 x64 Native Tools Command Prompt C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\Tools\Shortcuts Open C:\cygwin64\Cygwin.bat in VS2013 x64 Native Tools Command Prompt and make sure that compiler and linker are refering to VS2013 64 bit executables as shown below.[Assuming you have cygwin installed on your Windows machine] Set following environment variables set GYP_DEFINES=host_arch=x64 target_arch=x64 nwjs_sdk=1 disable_nacl=0 proprietary_codecs=1 branding=Chrome Go to Ffmpeg source code location : &lt;node-webkit-dir&gt;\src\third_party\ffmpeg [APPLY PATCH to file ] /chromium/scripts/build_ffmpeg.py Add support of mxf by enabling it as decoder, demuxer and parser - '--enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw', - '--enable-demuxer=ogg,matroska,wav', - '--enable-parser=opus,vp3,vorbis,vp8', + '--enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw,mxf', + '--enable-demuxer=ogg,matroska,wav,mxf', + '--enable-parser=opus,vp3,vorbis,vp8,mxf', [APPLY PATCH to file ] : /chromium/scripts/build_ffmpeg.py Add support of mxf by enabling it as decoder, demuxer and parser ['chromeos == 1', { 'ffmpeg_branding%': '&lt;(branding)OS', }, { # otherwise, assume Chrome/Chromium. - 'ffmpeg_branding%': '&lt;(branding)', + 'ffmpeg_branding%': 'Chrome', }], ], Build standalone ffmpeg code for windows 64 bit. Build will generate following directory build.x64.win folder. Copy config and from build.x64.win: ffmpeg_src&gt;./chromium/scripts/copy_config.sh Regenerate ffmpeg gyp files : ffmpeg_src&gt;python chromium/scripts/generate_gyp.py Following files get modified after running above commands: Force nwjs(chromium) to regenerate ninja files for modified *.h, *.asm, *.gypi (see previous step): Go to nwjs source code location : /node-webkit/src src&gt;gclientrunhook–force Build ffmpeg code using ninja to generate ffmpegsumo.dll: src&gt;ninja -C out/Debug_x64 ffmpegsumo-j16 Build nwjs code using ninja and link to ffmpegsumo.dll: src&gt;ninja -C out/Debug_x64 nw -j16]]></summary></entry><entry><title type="html">Building ffmpeg and ffplay on Windows7 64 bit</title><link href="http://localhost:4000/Building-ffmpeg-and-ffplay-on-Windows7-64-bit/" rel="alternate" type="text/html" title="Building ffmpeg and ffplay on Windows7 64 bit" /><published>2016-02-07T00:00:00+05:30</published><updated>2016-02-07T00:00:00+05:30</updated><id>http://localhost:4000/Building%20ffmpeg%20and%20ffplay%20on%20Windows7%2064%20bit</id><content type="html" xml:base="http://localhost:4000/Building-ffmpeg-and-ffplay-on-Windows7-64-bit/"><![CDATA[<p>##Prerequisite for ffmpeg##</p>
 <ul>
   <li>
     <p>Install Msys64 on yourmachine. (msys2-x86_64-20150916.exe)</p>
@@ -1102,7 +1202,7 @@ C:\msys64\mingw64\lib</li>
 </ul>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./configure <span class="nt">--enable-ffplay</span> <span class="nt">--toolchain</span><span class="o">=</span>msvc <span class="nt">--disable-shared</span> <span class="nt">--enable-static</span> <span class="nt">--enable-sdl</span> <span class="nt">--extra-ldflags</span><span class="o">=</span><span class="s2">"-Wl,-add-stdcall-alias"</span> <span class="nt">--enable-memalign-hack</span> <span class="nt">--disable-ffmpeg</span> <span class="nt">--pkg-config</span><span class="o">=</span>sdl-config
-</code></pre></div></div>]]></content><author><name></name></author><summary type="html"><![CDATA[##Prerequisite for ffmpeg## Install Msys64 on yourmachine. (msys2-x86_64-20150916.exe)]]></summary></entry><entry><title type="html">Building nwjs on Windows7 64 bit</title><link href="http://abhijeetk.github.io/Building-nwjs-on-Windows7-64-bit/" rel="alternate" type="text/html" title="Building nwjs on Windows7 64 bit" /><published>2016-02-07T00:00:00+05:30</published><updated>2016-02-07T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Building%20nwjs%20on%20Windows7%2064%20bit</id><content type="html" xml:base="http://abhijeetk.github.io/Building-nwjs-on-Windows7-64-bit/"><![CDATA[<p>##Install depot_tools : ##</p>
+</code></pre></div></div>]]></content><author><name></name></author><summary type="html"><![CDATA[##Prerequisite for ffmpeg## Install Msys64 on yourmachine. (msys2-x86_64-20150916.exe)]]></summary></entry><entry><title type="html">Building nwjs on Windows7 64 bit</title><link href="http://localhost:4000/Building-nwjs-on-Windows7-64-bit/" rel="alternate" type="text/html" title="Building nwjs on Windows7 64 bit" /><published>2016-02-07T00:00:00+05:30</published><updated>2016-02-07T00:00:00+05:30</updated><id>http://localhost:4000/Building%20nwjs%20on%20Windows7%2064%20bit</id><content type="html" xml:base="http://localhost:4000/Building-nwjs-on-Windows7-64-bit/"><![CDATA[<p>##Install depot_tools : ##</p>
 <ul>
   <li>Download code</li>
 </ul>
@@ -1181,6 +1281,4 @@ For 64 bit OS :</p>
 
 <p>##Clean code##</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    $ninja -C out/Release_x64 -t clean
-</code></pre></div></div>]]></content><author><name></name></author><summary type="html"><![CDATA[##Install depot_tools : ## Download code]]></summary></entry><entry><title type="html">Life cycle of Video element in chromium(m41)</title><link href="http://abhijeetk.github.io/Video-rendering-in-chromium(Sequence-diagram)/" rel="alternate" type="text/html" title="Life cycle of Video element in chromium(m41)" /><published>2016-02-06T00:00:00+05:30</published><updated>2016-02-06T00:00:00+05:30</updated><id>http://abhijeetk.github.io/Video-rendering-in-chromium(Sequence-diagram)</id><content type="html" xml:base="http://abhijeetk.github.io/Video-rendering-in-chromium(Sequence-diagram)/"><![CDATA[<h2 id="life-cycle-of-video-element">Life cycle of Video element:</h2>
-
-<p><img src="/images/video_rendering_sequence_diagram/image00001.jpeg" alt="Sequence diagram for Life cycle of Video element in chromium(m41)" title="Life cycle of Video element in chromium(m41)" /></p>]]></content><author><name></name></author><summary type="html"><![CDATA[Life cycle of Video element:]]></summary></entry></feed>
+</code></pre></div></div>]]></content><author><name></name></author><summary type="html"><![CDATA[##Install depot_tools : ## Download code]]></summary></entry></feed>
