@@ -1,11 +1,27 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://abhijeetk.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://abhijeetk.github.io/" rel="alternate" type="text/html" /><updated>2025-03-04T19:32:07+05:30</updated><id>https://abhijeetk.github.io/feed.xml</id><title type="html">Abhijeet Kandalkar</title><subtitle>Software Engineer @ Igalia | C++ developer | Open Source contributor in Webkit/Chromium</subtitle><entry><title type="html">WebXR on Windows</title><link href="https://abhijeetk.github.io/WebXR-on-Windows/" rel="alternate" type="text/html" title="WebXR on Windows" /><published>2025-03-02T00:00:00+05:30</published><updated>2025-03-02T00:00:00+05:30</updated><id>https://abhijeetk.github.io/WebXR-on-Windows</id><content type="html" xml:base="https://abhijeetk.github.io/WebXR-on-Windows/"><![CDATA[<h2 id="webxr-on-windows">WebXR on Windows</h2>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://abhijeetk.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://abhijeetk.github.io/" rel="alternate" type="text/html" /><updated>2025-03-04T23:26:44+05:30</updated><id>https://abhijeetk.github.io/feed.xml</id><title type="html">Abhijeet Kandalkar</title><subtitle>Software Engineer @ Igalia | C++ developer | Open Source contributor in Webkit/Chromium</subtitle><entry><title type="html">Testing WebXR on Windows</title><link href="https://abhijeetk.github.io/WebXR-on-Windows/" rel="alternate" type="text/html" title="Testing WebXR on Windows" /><published>2025-03-02T00:00:00+05:30</published><updated>2025-03-02T00:00:00+05:30</updated><id>https://abhijeetk.github.io/WebXR-on-Windows</id><content type="html" xml:base="https://abhijeetk.github.io/WebXR-on-Windows/"><![CDATA[<h3 id="webxr-on-windows">WebXR on Windows</h3>
 
 <p>It started with my need to debug Chromium’s implementation of OpenXR. I wanted to understand how Chromium interfaces with OpenXR APIs. However, I noticed that only the Android and Windows ports of Chromium currently support OpenXR bindings. Since I needed to debug a desktop implementation, Windows was the only viable option. Additionally, I did not have access to a physical XR device, so I explored whether a simulator or emulator environment could be used to test WebXR support for websites.</p>
+
+<h3 id="understanding-webxr-and-openxr">Understanding WebXR and OpenXR</h3>
+
+<p>Before diving into implementation details, it’s useful to understand what WebXR and OpenXR are and how they differ.</p>
+
+<p>WebXR is a web standard that enables immersive experiences, such as Virtual Reality (VR) and Augmented Reality (AR),
+in web browsers. It allows developers to create XR content using JavaScript and run it directly in a browser
+without requiring platform-specific applications.</p>
+
+<p>OpenXR is a cross-platform API standard developed by the Khronos Group, designed to unify access to different
+XR hardware and software. It provides a common interface for VR and AR devices, ensuring interoperability across
+different platforms and vendors.</p>
+
+<p>The key difference is that WebXR is a high-level API used by web applications to access XR experiences, whereas
+OpenXR is a low-level API used by platforms and engines to communicate with XR hardware. WebXR implementations,
+such as the one in Chromium use OpenXR as the backend to interact with different XR runtimes.</p>
 
 <h3 id="chromium-openxr-implementation">Chromium OpenXR Implementation</h3>
 <p>Chromium’s OpenXR implementation, which interacts with the platform-specific OpenXR runtime, is located in the <code class="language-plaintext highlighter-rouge">device/vr/</code> directory. WebXR code interacts with this <code class="language-plaintext highlighter-rouge">device/vr/</code> OpenXR implementation, which abstracts WebXR features across multiple platforms.</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>WebXR ---&gt; device/vr/ ---&gt; OpenXR runtime
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>WebXR ---&gt; device/vr/ ---&gt; OpenXR API ---&gt; OpenXR runtime
 </code></pre></div></div>
 
 <h3 id="installing-openxr-runtime">Installing OpenXR Runtime</h3>
@@ -44,12 +60,21 @@
 <h3 id="launch-webvr-application">Launch WebVR application</h3>
 <p>Launch chromium and Open : https://immersive-web.github.io/webxr-samples/immersive-vr-session.html</p>
 
-<p><img src="/images/WebXR-on-Windows/output.jpg" alt="output" title="WebXR on Windows" /></p>
+<p><img src="/images/WebXR-on-Windows/output.jpg" alt="output" title="Testing WebXR on Windows" /></p>
 
 <h3 id="callstack">CallStack</h3>
 <p>When we call <code class="language-plaintext highlighter-rouge">navigator.xr.requestSession("immersive-vr");</code> from Javascript, below call stack get triggered.</p>
 
-<p><img src="/images/WebXR-on-Windows/callstack.png" alt="callstack" title="WebXR on Windows" /></p>]]></content><author><name></name></author><summary type="html"><![CDATA[WebXR on Windows]]></summary></entry><entry><title type="html">Exploring sandboxing in CEF and CEFSharp for Windows platform</title><link href="https://abhijeetk.github.io/Exploring-sandboxing-in-CEF-and-CEFSharp/" rel="alternate" type="text/html" title="Exploring sandboxing in CEF and CEFSharp for Windows platform" /><published>2024-08-11T00:00:00+05:30</published><updated>2024-08-11T00:00:00+05:30</updated><id>https://abhijeetk.github.io/Exploring-sandboxing-in-CEF-and-CEFSharp</id><content type="html" xml:base="https://abhijeetk.github.io/Exploring-sandboxing-in-CEF-and-CEFSharp/"><![CDATA[<p>Sandboxing is a critical feature for ensuring the security and stability of applications that embed web content. In this blog, we will delve into how sandboxing is achieved in the Chromium Embedded Framework (<a href="https://bitbucket.org/chromiumembedded/cef/src/master/">CEF</a>). All analysis in this blog is performed on Windows operating system.</p>
+<p><img src="/images/WebXR-on-Windows/callstack.png" alt="callstack" title="Testing WebXR on Windows" /></p>
+
+<h3 id="conclusions">Conclusions</h3>
+<p>With this setup, you can explore and debug WebXR applications on Windows even without a physical VR headset.
+The combination of Chromium’s OpenXR implementation and Microsoft’s Mixed Reality Simulator provides
+a practical way to test WebXR features and interactions.</p>
+
+<p>If you’re interested in further experimenting, try developing a simple WebXR scene to validate your
+setup! Additionally, we plan to post more about Chromium’s architecture on OpenXR and will link
+those posts here once they are ready.</p>]]></content><author><name></name></author><summary type="html"><![CDATA[WebXR on Windows]]></summary></entry><entry><title type="html">Exploring sandboxing in CEF and CEFSharp for Windows platform</title><link href="https://abhijeetk.github.io/Exploring-sandboxing-in-CEF-and-CEFSharp/" rel="alternate" type="text/html" title="Exploring sandboxing in CEF and CEFSharp for Windows platform" /><published>2024-08-11T00:00:00+05:30</published><updated>2024-08-11T00:00:00+05:30</updated><id>https://abhijeetk.github.io/Exploring-sandboxing-in-CEF-and-CEFSharp</id><content type="html" xml:base="https://abhijeetk.github.io/Exploring-sandboxing-in-CEF-and-CEFSharp/"><![CDATA[<p>Sandboxing is a critical feature for ensuring the security and stability of applications that embed web content. In this blog, we will delve into how sandboxing is achieved in the Chromium Embedded Framework (<a href="https://bitbucket.org/chromiumembedded/cef/src/master/">CEF</a>). All analysis in this blog is performed on Windows operating system.</p>
 
 <h3 id="cefclient-and-cefsharp">CEFClient and CEFSharp</h3>
 <p>The base CEF framework includes support for the C and C++ programming languages. Also it provides a test applications to demonstrate its functionality. <a href="https://bitbucket.org/chromiumembedded/cef/src/master/tests/cefclient/">CEFClient</a>, a one of the C++ test application, serves this purpose.</p>
