@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIME Type Support Checker</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h2>MIME Type Support Checker</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>MIME Type</th>
+                <th>canPlayType</th>
+                <th>isTypeSupported</th>
+                <th>mediaCapabilities</th>
+            </tr>
+        </thead>
+        <tbody id="results"></tbody>
+    </table>
+
+    <script>
+        const MIMES = [
+            'video/mp4; codecs="hev1.1.6.L180.90"',
+            'video/webm; codecs="vp09.00.10.08"'
+        ];
+        
+        async function checkMIMESupport() {
+            const results = document.getElementById('results');
+            for (const mime of MIMES) {
+                const audio = document.createElement('audio');
+                const video = document.createElement('video');
+                const canPlay = audio.canPlayType(mime) || video.canPlayType(mime) || 'No';
+                const isTypeSupported = MediaSource.isTypeSupported ? MediaSource.isTypeSupported(mime) : 'N/A';
+                let mediaCapabilities = 'N/A';
+                
+                if ('mediaCapabilities' in navigator) {
+                    try {
+                        const config = {
+                            type: 'media-source',
+                            video: { contentType: mime, width: 1920, height: 1080, bitrate: 10000, framerate: 30 }
+                        };
+                        const support = await navigator.mediaCapabilities.decodingInfo(config);
+                        mediaCapabilities = support.supported ? 'supported' : 'unsupported';
+                    } catch (e) {
+                        mediaCapabilities = 'error';
+                    }
+                }
+                
+                const row = `<tr>
+                                <td>${mime}</td>
+                                <td>${canPlay}</td>
+                                <td>${isTypeSupported}</td>
+                                <td>${mediaCapabilities}</td>
+                            </tr>`;
+                results.innerHTML += row;
+            }
+        }
+        
+        checkMIMESupport();
+    </script>
+</body>
+</html>
