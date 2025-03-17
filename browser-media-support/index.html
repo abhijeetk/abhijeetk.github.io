@@ -28,7 +28,64 @@
     <script>
         const MIMES = [
             'video/mp4; codecs="hev1.1.6.L180.90"',
-            'video/webm; codecs="vp09.00.10.08"'
+
+            // https://source.chromium.org/chromium/chromium/src/+/main:media/base/mime_util_unittest.cc
+            'video/mp4; codecs="avc3.42E01E"',
+            'video/webm; codecs="vp09.00.10.08"',
+            'video/webm; codecs="vp09.02.10.10.01.06.06.06"',
+            'video/mp4; codecs="avc3"',
+            'audio/webm; codecs="opus"',
+            'audio/mp4; codecs="mp4a.40.2"',
+            'audio/mp4; codecs="flac"',
+            'audio/mp4; codecs="mp4a.40"',
+            'video/webm; codecs="opus"',
+            'audio/webm; codecs="vp09.00.10.08"',
+            'audio/mpeg; codecs="mp3"',
+            'video/webm; codecs="vp8"',
+            'video/ogg; codecs="theora"',
+
+            // https://source.chromium.org/chromium/chromium/src/+/main:media/base/mime_util_unittest.cc
+            // IsCodecSupportedOnAndroidTest.AndroidHLSAAC
+            /*
+            'application/x-mpegurl; codecs="mp4a.66"',
+            'application/x-mpegurl; codecs="mp4a.67"',
+            'application/x-mpegurl; codecs="mp4a.68"',
+            'application/x-mpegurl; codecs="mp4a.40.2"',
+            'application/x-mpegurl; codecs="mp4a.40.02"',
+            'application/x-mpegurl; codecs="mp4a.40.5"',
+            'application/x-mpegurl; codecs="mp4a.40.05"',
+            'application/x-mpegurl; codecs="mp4a.40.29"',
+            'application/vnd.apple.mpegurl; codecs="mp4a.66"',
+            'application/vnd.apple.mpegurl; codecs="mp4a.67"',
+            'application/vnd.apple.mpegurl; codecs="mp4a.68"',
+            'application/vnd.apple.mpegurl; codecs="mp4a.40.2"',
+            'application/vnd.apple.mpegurl; codecs="mp4a.40.02"',
+            'application/vnd.apple.mpegurl; codecs="mp4a.40.5"',
+            'application/vnd.apple.mpegurl; codecs="mp4a.40.05"',
+            'application/vnd.apple.mpegurl; codecs="mp4a.40.29"',
+            'audio/mpegurl; codecs="mp4a.66"',
+            'audio/mpegurl; codecs="mp4a.67"',
+            'audio/mpegurl; codecs="mp4a.68"',
+            'audio/mpegurl; codecs="mp4a.40.2"',
+            'audio/mpegurl; codecs="mp4a.40.02"',
+            'audio/mpegurl; codecs="mp4a.40.5"',
+            'audio/mpegurl; codecs="mp4a.40.05"',
+            'audio/mpegurl; codecs="mp4a.40.29"',
+            'audio/x-mpegurl; codecs="mp4a.66"',
+            'audio/x-mpegurl; codecs="mp4a.67"',
+            'audio/x-mpegurl; codecs="mp4a.68"',
+            'audio/x-mpegurl; codecs="mp4a.40.2"',
+            'audio/x-mpegurl; codecs="mp4a.40.02"',
+            'audio/x-mpegurl; codecs="mp4a.40.5"',
+            'audio/x-mpegurl; codecs="mp4a.40.05"',
+            'audio/x-mpegurl; codecs="mp4a.40.29"',
+            */
+
+            //https://source.chromium.org/chromium/chromium/src/+/main:media/test/pipeline_integration_test.cc
+            'audio/mp4; codecs="fLaC"',
+            'video/mp2t; codecs="mp4a.6B"',
+            'video/mp2t; codecs="mp4a.69"',
+            'video/mp4; codecs="hvc1.1.6.L93.B0"',
         ];
         
         async function checkMIMESupport() {
